@@ -12,7 +12,9 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.rm.mydiet.model.Product;
-import com.rm.mydiet.utils.persistence.StorageManager;
+import com.rm.mydiet.utils.UserPermissionListener;
+import com.rm.mydiet.utils.persistence.DatabaseProvider;
+import com.rm.mydiet.utils.persistence.DatabaseUpdateHelper;
 import com.rm.mydiet.utils.persistence.listeners.DatabaseResponseListener;
 import com.rm.mydiet.utils.persistence.listeners.DatabaseUpdateListener;
 
@@ -41,7 +43,12 @@ public class MainActivity extends AppCompatActivity
         mProgressBar = (ProgressBar) findViewById(R.id.progress_indicator);
         mListView = (RecyclerView) findViewById(R.id.items);
         mListView.setLayoutManager(new LinearLayoutManager(this));
-        StorageManager.updateProductsIfNeeded(this);
+        checkForUpdates();
+    }
+
+    private void checkForUpdates() {
+        DatabaseUpdateHelper updateHelper = new DatabaseUpdateHelper(this);
+        updateHelper.tryUpdate();
     }
 
     @Override
@@ -67,11 +74,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onUpdateAvailable(UserPermissionListener listener) {
+        listener.onGrant();
+    }
+
+    @Override
     public void onLoadComplete() {
         Log.d("MainActivity", "onLoadComplete");
         mListView.setVisibility(View.VISIBLE);
         mProgressBar.setVisibility(View.GONE);
-        StorageManager.retrieveProducts(app(), this);
+        DatabaseProvider.retrieveProducts(app(), this);
     }
 
     @Override
