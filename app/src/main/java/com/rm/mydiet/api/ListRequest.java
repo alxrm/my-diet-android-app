@@ -1,7 +1,5 @@
 package com.rm.mydiet.api;
 
-import android.util.Log;
-
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
@@ -44,7 +42,6 @@ public class ListRequest extends Request<ArrayList<Product>> {
     protected Response<ArrayList<Product>> parseNetworkResponse(NetworkResponse response) {
         try {
             String json = new String(response.data, Charset.forName(UTF_8));
-            Log.d("ListRequest", "parseNetworkResponse - json: " + json);
             ArrayList<Product> result = mGson.fromJson(json, mType);
             return Response.success(result, HttpHeaderParser.parseCacheHeaders(response));
         } catch (JsonSyntaxException e) {

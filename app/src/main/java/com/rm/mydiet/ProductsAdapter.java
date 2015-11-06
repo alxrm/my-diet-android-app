@@ -13,7 +13,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import static com.rm.mydiet.MyDietApplication.app;
+import static com.rm.mydiet.MyDietApplication.context;
 
 /**
  * Created by alex
@@ -53,7 +53,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ViewHo
         Product item = mProductList.get(position);
         holder.mName.setText(item.getName());
         holder.mInfo.setText(item.getCalories() + " ккал");
-        Picasso.with(app())
+        Picasso.with(context())
                 .load(Api.getImageUrl(item.getImg()))
                 .placeholder(R.drawable.ic_maps_local_see)
                 .into(holder.mIcon);

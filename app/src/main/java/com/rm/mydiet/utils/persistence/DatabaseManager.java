@@ -7,12 +7,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.rm.mydiet.api.Api;
+import com.rm.mydiet.model.DBConfig;
 import com.rm.mydiet.model.Product;
-import com.rm.mydiet.utils.BackgroundTaskExecutor;
-import com.rm.mydiet.utils.persistence.listeners.DatabaseResponseListener;
+import com.rm.mydiet.utils.Prefs;
+import com.rm.mydiet.utils.background.WorkerThreadExecutor;
 
 import java.util.ArrayList;
 
+import static com.rm.mydiet.MyDietApplication.context;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CALORIES;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CARBOHYDRATES;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_FATS;
@@ -27,30 +32,50 @@ import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.ALL;
 /**
  * Created by alex
  */
-public class DatabaseProvider extends SQLiteOpenHelper {
+public class DatabaseManager extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "diet.db";
     private static final int DB_VERSION = 1;
 
-    private static DatabaseProvider sInstance;
+    private static DatabaseManager sInstance;
+    private static DBConfig sOldConfig;
+    private static DBConfig sNewConfig;
+    private static ArrayList<Runnable> sCallbacks = new ArrayList<>();
+    private static boolean sDatabaseUpdated = false;
 
-    private DatabaseProvider(Context context) {
+    private DatabaseManager(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
-    public static DatabaseProvider getInstance(Context context) {
+    public static DatabaseManager getInstance() {
         if (null == sInstance) {
-            sInstance = new DatabaseProvider(context);
+            sInstance = new DatabaseManager(context());
         }
         return sInstance;
     }
 
-    public static void retrieveProducts(Context c, DatabaseResponseListener listener) {
-        loadProducts(getProductsCursor(c), listener);
+    private static synchronized void handleLoadComplete() {
+        sDatabaseUpdated = true;
+        for (Runnable callback : sCallbacks) callback.run();
     }
 
-    private static Cursor getProductsCursor(Context c) {
-        SQLiteDatabase readableDatabase = getReadableDatabase(c);
+    public void retrieveProducts(final DatabaseListener listener) {
+        Runnable loadProductsTask = new Runnable() {
+            @Override
+            public void run() {
+                loadProducts(getProductsCursor(), listener);
+            }
+        };
+
+        if (sDatabaseUpdated) {
+            loadProductsTask.run();
+        } else {
+            sCallbacks.add(loadProductsTask);
+        }
+    }
+
+    private Cursor getProductsCursor() {
+        SQLiteDatabase readableDatabase = getReadableDatabase();
         String selectQuery = SQLQueryBuilder.getInstance()
                 .select(ALL)
                 .from(PRODUCTS_TABLE)
@@ -61,13 +86,11 @@ public class DatabaseProvider extends SQLiteOpenHelper {
         return data;
     }
 
-    private static void loadProducts(final Cursor data, final DatabaseResponseListener listener) {
+    private void loadProducts(final Cursor data, final DatabaseListener listener) {
         final ArrayList<Product> tmpProducts = new ArrayList<>(data.getCount());
-
         Runnable loadTask = new Runnable() {
             @Override
             public void run() {
-
                 if (data.getCount() != 0) {
                     do {
                         final Product product = getProduct(data);
@@ -76,21 +99,19 @@ public class DatabaseProvider extends SQLiteOpenHelper {
                 }
             }
         };
-
         Runnable onReceive = new Runnable() {
             @Override
             public void run() {
                 listener.onReceiveData(tmpProducts);
             }
         };
-
-        BackgroundTaskExecutor.start()
+        WorkerThreadExecutor.start()
                 .task(loadTask)
                 .callback(onReceive)
                 .execute();
     }
 
-    private static Product getProduct(Cursor data) {
+    private Product getProduct(Cursor data) {
         Product product = new Product();
         final String id = data.getString(0);
         final String name = data.getString(1);
@@ -111,20 +132,12 @@ public class DatabaseProvider extends SQLiteOpenHelper {
         return product;
     }
 
-    private static float getFloatFromDatabase(String f) {
+    private float getFloatFromDatabase(String f) {
         return Float.valueOf(f);
     }
 
-    private static int getIntegerFromDatabase(String f) {
+    private int getIntegerFromDatabase(String f) {
         return Integer.valueOf(f);
-    }
-
-    private static SQLiteDatabase getWritableDatabase(Context context) {
-        return getInstance(context).getWritableDatabase();
-    }
-
-    private static SQLiteDatabase getReadableDatabase(Context context) {
-        return getInstance(context).getReadableDatabase();
     }
 
     @Override
@@ -137,7 +150,60 @@ public class DatabaseProvider extends SQLiteOpenHelper {
         // no-op
     }
 
-    int getProductsCount() {
+    public void update() {
+        sOldConfig = Prefs.getSavedDatabaseConfig();
+        Api.getConfig(
+                new Response.Listener<DBConfig>() {
+                    @Override
+                    public void onResponse(DBConfig newConfig) {
+                        if (isReadyToUpdate(sOldConfig, newConfig, sInstance)) {
+                            Log.d("DatabaseUpdateHelper", "NEW CONFIG");
+                            sNewConfig = newConfig;
+                            downloadProducts();
+                        } else {
+                            Log.d("DatabaseUpdateHelper", "NO NEW CONFIG");
+                            handleLoadComplete();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("DatabaseManager", "getConfig error: " + error);
+                        handleLoadComplete();
+                    }
+                }
+        );
+    }
+
+    private boolean isReadyToUpdate(DBConfig oldConf, DBConfig newConf, DatabaseManager db) {
+        boolean isReady;
+        isReady = oldConf.isEmpty();
+        isReady |= !oldConf.equals(newConf);
+        isReady |= newConf.getRowCount() != db.getProductsCount();
+        return isReady;
+    }
+
+    private void downloadProducts() {
+        sInstance.clearProducts();
+        Api.getProducts(
+                new Response.Listener<ArrayList<Product>>() {
+                    @Override
+                    public void onResponse(ArrayList<Product> response) {
+                        sInstance.pushProducts(response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("DatabaseManager", "getConfig error: " + error);
+                        handleLoadComplete();
+                    }
+                }
+        );
+    }
+
+    private int getProductsCount() {
         String countQuery = SQLQueryBuilder.getInstance().select(ALL).from(PRODUCTS_TABLE).build();
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
@@ -149,15 +215,15 @@ public class DatabaseProvider extends SQLiteOpenHelper {
         return productsCount;
     }
 
-    void clearProducts() {
-        Log.d("DatabaseProvider", "clearProducts");
+    private void clearProducts() {
+        Log.d("DatabaseManager", "clearProducts");
         SQLiteDatabase db = getWritableDatabase();
         String clearQuery = SQLQueryBuilder.getInstance().delete(PRODUCTS_TABLE).build();
         db.execSQL(clearQuery);
     }
 
-    void pushProducts(final ArrayList<Product> products, final Runnable afterUpdate) {
-        Log.d("DatabaseProvider", "pushProducts");
+    private void pushProducts(final ArrayList<Product> products) {
+        Log.d("DatabaseManager", "pushProducts");
         Runnable pushTask = new Runnable() {
             @Override
             public void run() {
@@ -169,16 +235,15 @@ public class DatabaseProvider extends SQLiteOpenHelper {
                         db.setTransactionSuccessful();
                     } finally {
                         db.endTransaction();
+                        Prefs.saveDbConfig(sNewConfig);
+                        handleLoadComplete();
                     }
                 } catch (Exception e) {
                     Log.e("My Diet Database", "preFillDatabase: " + e);
                 }
             }
         };
-        BackgroundTaskExecutor.start()
-                .task(pushTask)
-                .callback(afterUpdate)
-                .execute();
+        WorkerThreadExecutor.start().task(pushTask).execute();
     }
 
     private void fillAllProducts(SQLiteDatabase db, ArrayList<Product> products) {

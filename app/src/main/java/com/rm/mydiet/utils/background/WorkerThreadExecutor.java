@@ -1,41 +1,42 @@
-package com.rm.mydiet.utils;
+package com.rm.mydiet.utils.background;
 
+import android.os.Handler;
 import android.os.Looper;
-
-import com.rm.mydiet.utils.persistence.listeners.DatabaseHandler;
 
 /**
  * Created by alex
  */
-public class BackgroundTaskExecutor {
+public class WorkerThreadExecutor {
 
+    private static Handler sUiHandler;
     private Runnable mBefore;
     private Runnable mTask;
     private Runnable mAfter;
     private Runnable mCallback;
 
-    private BackgroundTaskExecutor() {}
+    private WorkerThreadExecutor() {}
 
-    public static BackgroundTaskExecutor start() {
-        return new BackgroundTaskExecutor();
+    public static WorkerThreadExecutor start() {
+        if (sUiHandler == null) sUiHandler = new Handler(Looper.getMainLooper());
+        return new WorkerThreadExecutor();
     }
 
-    public BackgroundTaskExecutor before(Runnable r) {
+    public WorkerThreadExecutor before(Runnable r) {
         mBefore = r;
         return this;
     }
 
-    public BackgroundTaskExecutor task(Runnable r) {
+    public WorkerThreadExecutor task(Runnable r) {
         mTask = r;
         return this;
     }
 
-    public BackgroundTaskExecutor after(Runnable r) {
+    public WorkerThreadExecutor after(Runnable r) {
         mAfter = r;
         return this;
     }
 
-    public BackgroundTaskExecutor callback(Runnable r) {
+    public WorkerThreadExecutor callback(Runnable r) {
         mCallback = r;
         return this;
     }
@@ -48,7 +49,7 @@ public class BackgroundTaskExecutor {
                 if (mBefore != null) mBefore.run();
                 if (mTask != null) mTask.run();
                 if (mAfter != null) mAfter.run();
-                if (mCallback != null) DatabaseHandler.callback(mCallback);
+                if (mCallback != null) sUiHandler.post(mCallback);
             }
         });
         executorThread.start();

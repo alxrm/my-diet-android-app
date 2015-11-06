@@ -12,22 +12,14 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.rm.mydiet.model.Product;
-import com.rm.mydiet.utils.UserPermissionListener;
-import com.rm.mydiet.utils.persistence.DatabaseProvider;
-import com.rm.mydiet.utils.persistence.DatabaseUpdateHelper;
-import com.rm.mydiet.utils.persistence.listeners.DatabaseResponseListener;
-import com.rm.mydiet.utils.persistence.listeners.DatabaseUpdateListener;
+import com.rm.mydiet.utils.persistence.DatabaseManager;
+import com.rm.mydiet.utils.persistence.DatabaseListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.rm.mydiet.MyDietApplication.app;
 
-
-public class MainActivity extends AppCompatActivity
-        implements
-        DatabaseUpdateListener,
-        DatabaseResponseListener {
+public class MainActivity extends AppCompatActivity implements DatabaseListener {
 
     private ArrayList<Product> mProducts;
     private RecyclerView mListView;
@@ -43,12 +35,14 @@ public class MainActivity extends AppCompatActivity
         mProgressBar = (ProgressBar) findViewById(R.id.progress_indicator);
         mListView = (RecyclerView) findViewById(R.id.items);
         mListView.setLayoutManager(new LinearLayoutManager(this));
-        checkForUpdates();
+
+        inflateData();
     }
 
-    private void checkForUpdates() {
-        DatabaseUpdateHelper updateHelper = new DatabaseUpdateHelper(this);
-        updateHelper.tryUpdate();
+    private void inflateData() {
+        DatabaseManager mgr = DatabaseManager.getInstance();
+        mgr.update();
+        mgr.retrieveProducts(this);
     }
 
     @Override
@@ -73,34 +67,17 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onUpdateAvailable(UserPermissionListener listener) {
-        listener.onGrant();
-    }
-
-    @Override
-    public void onLoadComplete() {
-        Log.d("MainActivity", "onLoadComplete");
-        mListView.setVisibility(View.VISIBLE);
-        mProgressBar.setVisibility(View.GONE);
-        DatabaseProvider.retrieveProducts(app(), this);
-    }
-
-    @Override
-    public void onLoadStarted() {
-        mListView.setVisibility(View.GONE);
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public void onReceiveData(Collection<?> data) {
         mProducts = (ArrayList<Product>) data;
         mListView.setAdapter(new ProductsAdapter(mProducts));
+        mProgressBar.setVisibility(View.GONE);
+        mListView.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onError(Exception e) {
-        Log.d("MainActivity", "onError err: " + e);
+        Log.d("MainActivity", "onError e: " + e);
     }
 }
