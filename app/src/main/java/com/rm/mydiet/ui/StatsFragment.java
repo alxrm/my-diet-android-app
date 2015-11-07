@@ -14,9 +14,9 @@ import com.rm.mydiet.utils.base.BaseFragment;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFragment extends BaseFragment {
+public class StatsFragment extends BaseFragment {
 
-    public MainFragment() {
+    public StatsFragment() {
         // Required empty public constructor
     }
 
@@ -24,12 +24,12 @@ public class MainFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        return inflater.inflate(R.layout.fragment_stats, container, false);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d("MainFragment", "onViewCreated");
+        Log.d("StatsFragment", "onViewCreated");
     }
 }

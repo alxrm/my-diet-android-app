@@ -2,9 +2,7 @@ package com.rm.mydiet.utils.base;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
+import android.app.Fragment;
 import android.view.View;
 
 /**
@@ -14,6 +12,7 @@ public class BaseFragment extends Fragment {
 
     protected View mRootView;
     protected BaseActivity mParent;
+    protected String mTitle;
 
     @Override
     public void onAttach(Context context) {
@@ -25,6 +24,13 @@ public class BaseFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRootView = view;
+        if (mParent != null && mParent.getToolbar() != null) {
+            mParent.getToolbar().setTitle(mTitle);
+        }
+    }
+
+    public void setTitle(String title) {
+        mTitle = title;
     }
 
     public View findViewById(int layoutId){

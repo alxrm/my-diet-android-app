@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.rm.mydiet.ui.MainFragment;
 import com.rm.mydiet.utils.base.BaseActivity;
 import com.rm.mydiet.utils.persistence.DatabaseManager;
 
@@ -14,11 +13,8 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_base);
         inflateData();
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new MainFragment()).commit();
     }
 
     private void inflateData() {

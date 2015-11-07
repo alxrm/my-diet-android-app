@@ -51,12 +51,14 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if (null == sInstance) {
             sInstance = new DatabaseManager(context());
         }
+
         return sInstance;
     }
 
     private static synchronized void handleLoadComplete() {
         sDatabaseUpdated = true;
         for (Runnable callback : sCallbacks) callback.run();
+        sCallbacks = new ArrayList<>();
     }
 
     public void retrieveProducts(final DatabaseListener listener) {

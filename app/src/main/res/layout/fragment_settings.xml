@@ -1,0 +1,236 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.rm.mywater.ui.SettingsFragment"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false">
+
+        <RelativeLayout
+            android:id="@+id/weight_cell"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/weight_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_alignParentTop="true"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="Вес"/>
+
+            <TextView
+                android:id="@+id/weight_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_below="@id/weight_title"
+                android:textSize="13sp"
+                android:textColor="@color/textColor"
+                android:text="62 кг"/>
+
+            <View
+                android:id="@+id/weight_separator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="8dp"
+                android:background="#cccc"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/height_cell"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground"
+            android:layout_below="@id/weight_cell">
+
+            <TextView
+                android:id="@+id/height_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_alignParentTop="true"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="Рост"/>
+
+            <TextView
+                android:id="@+id/height_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_below="@id/height_title"
+                android:textSize="13sp"
+                android:textColor="@color/textColor"
+                android:text="168 см"/>
+
+            <View
+                android:id="@+id/height_separator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="8dp"
+                android:background="#cccc"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/birth_cell"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground"
+            android:layout_below="@id/height_cell">
+
+            <TextView
+                android:id="@+id/birth_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_alignParentTop="true"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="День рождения"/>
+
+            <TextView
+                android:id="@+id/birth_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_below="@id/birth_title"
+                android:textSize="13sp"
+                android:textColor="@color/textColor"
+                android:text="30 сентября 1995 г."/>
+
+            <View
+                android:id="@+id/birth_separator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="8dp"
+                android:background="#cccc"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/gender_cell"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground"
+            android:layout_below="@id/birth_cell">
+
+            <TextView
+                android:id="@+id/gender_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_alignParentTop="true"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="Пол"/>
+
+            <TextView
+                android:id="@+id/gender_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_below="@id/gender_title"
+                android:textSize="13sp"
+                android:textColor="@color/textColor"
+                android:text="Мужской"/>
+
+            <View
+                android:id="@+id/gender_separator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="8dp"
+                android:background="#cccc"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/activity_cell"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:clickable="true"
+            android:background="?attr/selectableItemBackground"
+            android:layout_below="@id/gender_cell">
+
+            <TextView
+                android:id="@+id/activity_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_alignParentTop="true"
+                android:textSize="16sp"
+                android:textColor="#000"
+                android:text="Подвижность"/>
+
+            <TextView
+                android:id="@+id/activity_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingLeft="16dp"
+                android:layout_below="@id/activity_title"
+                android:textSize="13sp"
+                android:textColor="@color/textColor"
+                android:text="Средняя"/>
+
+            <View
+                android:id="@+id/activity_separator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="8dp"
+                android:background="#cccc"
+                />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/notifications_descr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/activity_cell"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textSize="14sp"
+            android:textColor="@color/textColor"
+            android:text="@string/settings_description"
+            android:gravity="start"
+            />
+
+    </RelativeLayout>
+</ScrollView>
+

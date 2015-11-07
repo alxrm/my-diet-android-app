@@ -55,6 +55,23 @@ public class TimeUtil {
         return resDate;
     }
 
+    public static String getTime(long unix) {
+
+        SimpleDateFormat dateFormat = (SimpleDateFormat) SimpleDateFormat.getInstance();
+        Date d = new Date();
+        String resDate;
+
+        d.setTime(unix * 1000);
+        dateFormat.applyPattern("h:mm");
+
+        resDate = dateFormat.format(d);
+
+        Log.d("TimeUtil", "getTime - resDate: "
+                + resDate);
+
+        return resDate;
+    }
+
     public static long getStartOfTheDay(long time) {
 
         Calendar calendar = Calendar.getInstance();
@@ -75,5 +92,27 @@ public class TimeUtil {
 
     public static long getToday() {
         return getStartOfTheDay(unixTime());
+    }
+
+    public static String formatBirthDate(long birth) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyyy г.", new Locale("ru", "RU"));
+        Date d = new Date();
+        String resDate;
+
+        d.setTime(birth);
+        dateFormat.applyPattern("d MMM yyyy г.");
+
+        resDate = dateFormat.format(d);
+
+        Log.d("TimeUtil", "getDay - resDate: "
+                + resDate);
+
+        return resDate;
+    }
+
+    public static long getDate(int year, int monthOfYear, int dayOfMonth) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(year, monthOfYear, dayOfMonth, 0, 0, 0);
+        return calendar.getTimeInMillis();
     }
 }
