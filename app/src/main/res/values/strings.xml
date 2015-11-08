@@ -4,4 +4,6 @@
 
     <string name="hello_blank_fragment">FRGMT</string>
     <string name="settings_description">На основе данных автоматически производится\nрассчёт суточной нормы калорий, но вы можете\nсамостоятельно определить значение</string>
+    <string name="timer_advice_text">Выпивай стакан воды\nза 20-30 минут\nдо еды</string>
+    <string name="add_products_placeholder_text">Добавьте продукты, которые\nвы съели на</string>
 </resources>

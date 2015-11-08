@@ -31,6 +31,8 @@ public class BaseActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.drawer_view);
+        mNavigationView.setBackgroundResource(R.drawable.drawer_background);
+
         mFragmentManager = getFragmentManager();
 
         if (mToolbar != null) {
@@ -52,7 +54,7 @@ public class BaseActivity extends AppCompatActivity {
 
                 switch (item.getItemId()) {
                     case R.id.navigation_calories: {
-                        switchFragment(new MainFragment(), "Мои калории");
+                        switchFragment(new MainFragment(), null);
                         return true;
                     }
                     case R.id.navigation_stats: {

@@ -15,8 +15,8 @@ import java.util.Random;
  */
 public class Api {
 
-    private static final String BASE_URL = "http://altox.tk/products/";
-    private static final String IMAGE_URL = "http://altox.tk/productsStatic/img/";
+    private static final String BASE_URL = "http://abovyan.me/products/";
+    private static final String IMAGE_URL = "http://abovyan.me/productsStatic/img/";
     private static final String GET_CONFIG_METHOD = "getConfig";
     private static final String GET_PRODUCTS_METHOD = "getProducts";
     private static final String SALT = "kQDJAOXMtOFEP8fEYhLl";

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.rm.mydiet.ui.MainFragment;
 import com.rm.mydiet.utils.base.BaseActivity;
 import com.rm.mydiet.utils.persistence.DatabaseManager;
 
@@ -15,6 +16,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
         inflateData();
+        switchFragment(new MainFragment(), null);
     }
 
     private void inflateData() {
