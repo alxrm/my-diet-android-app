@@ -3,8 +3,9 @@
     <color name="colorPrimary">#3DC156</color>
     <color name="colorPrimaryDark">#3AAA5A</color>
     <color name="colorPrimaryLight">#F5FAF3</color>
+    <color name="colorPrimaryLightFocused">#D3EBCA</color>
     <color name="colorAccent">#fff</color>
     <color name="colorWindowBackground">#fff</color>
-    <color name="textColor">#64000000</color>
+    <color name="textColor">#84000000</color>
     <color name="dividerColor">#0c000000</color>
 </resources>

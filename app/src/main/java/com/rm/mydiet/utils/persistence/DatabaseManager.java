@@ -5,12 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.v4.util.Pair;
 import android.util.Log;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.rm.mydiet.api.Api;
 import com.rm.mydiet.model.DBConfig;
+import com.rm.mydiet.model.Eating;
 import com.rm.mydiet.model.Product;
 import com.rm.mydiet.utils.Prefs;
 import com.rm.mydiet.utils.background.WorkerThreadExecutor;
@@ -28,6 +30,13 @@ import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_NAME;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_PROTEINS;
 import static com.rm.mydiet.utils.persistence.ProductsTable.PRODUCTS_TABLE;
 import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.ALL;
+import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.BIGGER_OR_EQUALS;
+import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.LESS;
+import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.LIKE;
+import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_DAYPART;
+import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_PRODUCT_ID;
+import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_TIME;
+import static com.rm.mydiet.utils.persistence.TimelineTable.TIMELINE_TABLE;
 
 /**
  * Created by alex
@@ -61,6 +70,22 @@ public class DatabaseManager extends SQLiteOpenHelper {
         sCallbacks = new ArrayList<>();
     }
 
+    public void retrieveEatings(final long dayStart,
+                                final long dayEnd,
+                                final DatabaseListener listener) {
+        Runnable loadEatingsTask = new Runnable() {
+            @Override
+            public void run() {
+                loadEatings(getEatingsCursor(dayStart, dayEnd), listener);
+            }
+        };
+        if (sDatabaseUpdated) {
+            loadEatingsTask.run();
+        } else {
+            sCallbacks.add(loadEatingsTask);
+        }
+    }
+
     public void retrieveProducts(final DatabaseListener listener) {
         Runnable loadProductsTask = new Runnable() {
             @Override
@@ -68,12 +93,37 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 loadProducts(getProductsCursor(), listener);
             }
         };
-
         if (sDatabaseUpdated) {
             loadProductsTask.run();
         } else {
             sCallbacks.add(loadProductsTask);
         }
+    }
+
+    private Cursor getEatingsCursor(long dayStart, long dayEnd) {
+        SQLiteDatabase readableDatabase = getReadableDatabase();
+        String selectQuery = SQLQueryBuilder.getInstance()
+                .select(new ArrayList<Pair<String, String>>(){{
+                    add(Pair.create(PRODUCTS_TABLE, ALL));
+                    add(Pair.create(TIMELINE_TABLE, COLUMN_TIME));
+                    add(Pair.create(TIMELINE_TABLE, COLUMN_DAYPART));
+                }})
+                .from(TIMELINE_TABLE)
+                .innerJoin(PRODUCTS_TABLE)
+                .on(
+                        TIMELINE_TABLE + "." + COLUMN_PRODUCT_ID,
+                        LIKE,
+                        PRODUCTS_TABLE + "." + COLUMN_ID
+                )
+                .where()
+                .integerClause(TIMELINE_TABLE + "." + COLUMN_TIME, BIGGER_OR_EQUALS, dayStart)
+                .and()
+                .integerClause(TIMELINE_TABLE + "." + COLUMN_TIME, LESS, dayEnd)
+                .orderBy(new String[]{COLUMN_DAYPART, COLUMN_TIME})
+                .build();
+        Cursor data = readableDatabase.rawQuery(selectQuery, null);
+        data.moveToFirst();
+        return data;
     }
 
     private Cursor getProductsCursor() {
@@ -86,6 +136,31 @@ public class DatabaseManager extends SQLiteOpenHelper {
         Cursor data = readableDatabase.rawQuery(selectQuery, null);
         data.moveToFirst();
         return data;
+    }
+
+    private void loadEatings(final Cursor data, final DatabaseListener listener) {
+        final ArrayList<Eating> tmpEatings = new ArrayList<>(data.getCount());
+        Runnable loadTask = new Runnable() {
+            @Override
+            public void run() {
+                if (data.getCount() != 0) {
+                    do {
+                        final Eating eating = getEating(data);
+                        tmpEatings.add(eating);
+                    } while (data.moveToNext());
+                }
+            }
+        };
+        Runnable onReceive = new Runnable() {
+            @Override
+            public void run() {
+                listener.onReceiveData(tmpEatings);
+            }
+        };
+        WorkerThreadExecutor.start()
+                .task(loadTask)
+                .callback(onReceive)
+                .execute();
     }
 
     private void loadProducts(final Cursor data, final DatabaseListener listener) {
@@ -111,6 +186,14 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 .task(loadTask)
                 .callback(onReceive)
                 .execute();
+    }
+
+    private Eating getEating(Cursor data) {
+        Eating eating = new Eating();
+        eating.setProduct(getProduct(data));
+        eating.setTime(data.getLong(8));
+        eating.setDayPart(data.getInt(9));
+        return eating;
     }
 
     private Product getProduct(Cursor data) {
@@ -145,6 +228,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(ProductsTable.CREATE);
+        db.execSQL(TimelineTable.CREATE);
     }
 
     @Override

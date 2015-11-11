@@ -15,6 +15,8 @@ public class Prefs {
     public static final String KEY_DB_CONFIG_HASH = "db_config_hash";
     public static final String KEY_DB_CONFIG_COUNT = "db_config_count";
     private static final String KEY_LAST_UPDATE = "last_update";
+    public static final String KEY_TIMER_OFFSET = "key_timer_offset";
+    public static final String KEY_MAX_CALS = "key_max_cals";
 
     private static final String PREF_MAIN_NAME = "mydiet_preferences";
     private static final String TAG = "Prefs";

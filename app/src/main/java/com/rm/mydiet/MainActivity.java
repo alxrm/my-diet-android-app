@@ -15,8 +15,9 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
-        inflateData();
         switchFragment(new MainFragment(), null);
+        runOnUiThread(mFragmentAction);
+        inflateData();
     }
 
     private void inflateData() {

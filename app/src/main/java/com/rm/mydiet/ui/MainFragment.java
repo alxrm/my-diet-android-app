@@ -3,38 +3,36 @@ package com.rm.mydiet.ui;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.rm.mydiet.R;
+import com.rm.mydiet.model.DayPart;
+import com.rm.mydiet.ui.adapter.DayPartsAdapter;
 import com.rm.mydiet.utils.base.BaseFragment;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MainFragment extends BaseFragment {
 
-    private ProgressBar mTimerProgress;
-    private TextView mTimerCountDown;
-    private TextView mTimerBadge;
-    private RelativeLayout mTimerBox;
     private RecyclerView mDayParts;
-    private ProgressBar mCalsProgress;
-    private TextView mCalsText;
-    private RelativeLayout mSkipTimer;
-    private RelativeLayout mAddFood;
-    private RelativeLayout mAddMore;
-    private RelativeLayout mEatenBox;
-    private RecyclerView mEatenList;
-    private TextView mEatenText;
+    private ArrayList<DayPart> mDayPartsList = new ArrayList<>();
+    private DayPartsAdapter mDayPartsAdapter;
 
     public MainFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // TODO init some logic part
     }
 
     @Override
@@ -48,38 +46,19 @@ public class MainFragment extends BaseFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initDayParts();
-        initTimer();
-        initDayEaten();
-        initFooter();
-    }
-
-    private void initDayEaten() {
-        mEatenBox = (RelativeLayout) findViewById(R.id.day_eaten);
-        mEatenList = (RecyclerView) findViewById(R.id.day_eaten_list);
-        mEatenText = (TextView) findViewById(R.id.day_eaten_text);
     }
 
     private void initDayParts() {
         mDayParts = (RecyclerView) findViewById(R.id.day_parts);
+        mDayParts.setLayoutManager(new GridLayoutManager(getActivity(), 4));
+        mDayPartsList = getEmptyDayParts();
+        mDayPartsAdapter = new DayPartsAdapter(mDayPartsList);
+        mDayParts.setAdapter(mDayPartsAdapter);
     }
 
-    private void initFooter() {
-        mCalsProgress = (ProgressBar) findViewById(R.id.day_cals_left);
-        mCalsText = (TextView) findViewById(R.id.day_cals_text);
-        mSkipTimer = (RelativeLayout) findViewById(R.id.skip_timer_button);
-        mAddFood = (RelativeLayout) findViewById(R.id.add_food_button);
-        mAddMore = (RelativeLayout) findViewById(R.id.add_more_food_button);
-    }
-
-    private void initTimer() {
-        mTimerProgress = (ProgressBar) findViewById(R.id.day_timer_progress);
-        mTimerCountDown = (TextView) findViewById(R.id.day_timer_countdown);
-        mTimerBadge = (TextView) findViewById(R.id.day_timer_badge);
-
-        mTimerBox = (RelativeLayout) findViewById(R.id.day_timer);
-    }
-
-    private void selectDayPart(int dayPart) {
-
+    public ArrayList<DayPart> getEmptyDayParts() {
+        ArrayList<DayPart> emptyParts = new ArrayList<>();
+        for (int i = 0; i < 4; i++) emptyParts.add(new DayPart(i));
+        return emptyParts;
     }
 }

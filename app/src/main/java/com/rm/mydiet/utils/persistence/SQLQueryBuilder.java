@@ -1,7 +1,9 @@
 package com.rm.mydiet.utils.persistence;
 
 import android.support.annotation.NonNull;
-import android.support.v4.util.ArrayMap;
+import android.support.v4.util.Pair;
+
+import java.util.ArrayList;
 
 /**
  * Created by alex
@@ -106,14 +108,16 @@ public class SQLQueryBuilder {
     /**
      * <Table, Column>
      */
-    public SQLQueryBuilder select(ArrayMap<String, String> tableColumn) {
+    public SQLQueryBuilder select(ArrayList<Pair<String, String>> tableColumn) {
         sBuilder.append(SELECT);
         if (tableColumn != null && !tableColumn.isEmpty()) {
-            for (int i = 0; i < tableColumn.size(); i++) {
-                sBuilder.append(tableColumn.keyAt(i))
+            for (Pair<String, String> tabCol : tableColumn) {
+                sBuilder.append(tabCol.first)
                         .append(".")
-                        .append(tableColumn.valueAt(i));
+                        .append(tabCol.second)
+                        .append(COMA);
             }
+            removeLastComa();
         } else {
             sBuilder.append(ALL);
         }
@@ -132,7 +136,7 @@ public class SQLQueryBuilder {
 
     public SQLQueryBuilder integerClause(@NonNull String column,
                                          @NonNull String operators,
-                                         int operand) {
+                                         long operand) {
         sBuilder.append(column)
                 .append(operators)
                 .append(operand);

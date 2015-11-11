@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
+        android:theme="@style/AppTheme.StatusBarStub"
         tools:context=".MainActivity">
 
         <android.support.design.widget.AppBarLayout
@@ -47,6 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        app:itemBackground="@android:color/transparent"
         app:menu="@menu/drawer"
         app:headerLayout="@layout/layout_drawer_header"
         />

@@ -50,7 +50,7 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/day_parts"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="72dp"
         android:layout_below="@id/day_selector"
         android:background="#F5FAF2"
         android:overScrollMode="never"

@@ -13,7 +13,8 @@ import java.util.Locale;
  */
 public class TimeUtil {
 
-    private static final long FOUR_HOURS = 14400000L;
+    public static final long DAY_MILLIES = 86400000000L;
+    public static final long FOUR_HOURS_MILLIES = 14400000000L;
 
     public static void setAlarm(Context context) {
 //        Intent alarmIntent = new Intent(context, CurrencyUpdateReceiver.class);
@@ -34,18 +35,17 @@ public class TimeUtil {
     }
 
     public static long unixTime() {
-
-        return System.currentTimeMillis()/1000;
+        return System.currentTimeMillis();
     }
 
     public static String getDay(long unix) {
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d", new Locale("en", "US"));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM, EEEE", new Locale("ru", "RU"));
         Date d = new Date();
         String resDate;
 
-        d.setTime(unix * 1000);
-        dateFormat.applyPattern("MMMM d");
+        d.setTime(unix);
+        dateFormat.applyPattern("d MMMM, EEEE");
 
         resDate = dateFormat.format(d);
 
@@ -57,11 +57,11 @@ public class TimeUtil {
 
     public static String getTime(long unix) {
 
-        SimpleDateFormat dateFormat = (SimpleDateFormat) SimpleDateFormat.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("h:mm", new Locale("ru", "RU"));
         Date d = new Date();
         String resDate;
 
-        d.setTime(unix * 1000);
+        d.setTime(unix);
         dateFormat.applyPattern("h:mm");
 
         resDate = dateFormat.format(d);
@@ -75,7 +75,7 @@ public class TimeUtil {
     public static long getStartOfTheDay(long time) {
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time*1000);
+        calendar.setTimeInMillis(time);
 
         int year    = calendar.get(Calendar.YEAR);
         int month   = calendar.get(Calendar.MONTH);
@@ -83,7 +83,7 @@ public class TimeUtil {
 
         calendar.set(year, month, day, 0, 0, 0);
 
-        long result = calendar.getTimeInMillis()/1000;
+        long result = calendar.getTimeInMillis();
 
         Log.d("TimeUtil", "Today in millis: " + result);
 
@@ -114,5 +114,13 @@ public class TimeUtil {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, monthOfYear, dayOfMonth, 0, 0, 0);
         return calendar.getTimeInMillis();
+    }
+
+    public static String formatCountDown(long left) {
+        long second = (left / 1000) % 60;
+        long minute = (left / (1000 * 60)) % 60;
+        long hour = (left / (1000 * 60 * 60)) % 24;
+
+        return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 }

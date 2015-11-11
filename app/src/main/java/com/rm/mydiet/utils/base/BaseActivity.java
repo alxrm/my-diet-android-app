@@ -20,6 +20,7 @@ import com.rm.mydiet.ui.StatsFragment;
 public class BaseActivity extends AppCompatActivity {
 
     protected Toolbar mToolbar;
+    protected Runnable mFragmentAction;
     private NavigationView mNavigationView;
     private DrawerLayout mDrawerLayout;
     private FragmentManager mFragmentManager;
@@ -31,7 +32,28 @@ public class BaseActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.drawer_view);
-        mNavigationView.setBackgroundResource(R.drawable.drawer_background);
+//        mNavigationView.setBackgroundResource(R.drawable.drawer_background);
+        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                runOnUiThread(mFragmentAction);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        });
 
         mFragmentManager = getFragmentManager();
 
@@ -46,7 +68,8 @@ public class BaseActivity extends AppCompatActivity {
             });
         }
 
-        mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        mNavigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
                 if (item.isChecked()) return false;
@@ -75,11 +98,17 @@ public class BaseActivity extends AppCompatActivity {
         return mToolbar;
     }
 
-    protected void switchFragment(BaseFragment fragment, String title) {
-        FragmentTransaction transaction = mFragmentManager.beginTransaction();
-        fragment.setTitle(title);
-        transaction
-                .replace(R.id.container, fragment)
-                .commit();
+    protected void switchFragment(final BaseFragment fragment, final String title) {
+        mFragmentAction = new Runnable() {
+            @Override
+            public void run() {
+                FragmentTransaction transaction = mFragmentManager.beginTransaction();
+                fragment.setTitle(title);
+                transaction
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                        .replace(R.id.container, fragment)
+                        .commit();
+            }
+        };
     }
 }
