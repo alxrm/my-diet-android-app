@@ -1,5 +1,6 @@
 package com.rm.mydiet;
 
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,8 +16,10 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
-        switchFragment(new MainFragment(), null);
-        runOnUiThread(mFragmentAction);
+        MainFragment fragment = new MainFragment();
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        fragment.setTitle(null);
+        transaction.replace(R.id.container, fragment).commit();
         inflateData();
     }
 

@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,15 @@ import java.util.ArrayList;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFragment extends BaseFragment {
+public class MainFragment extends BaseFragment
+        implements OnFragmentInteractionListener {
+
+
+    public static final String KEY_INFO_PRODUCT = "product";
+    public static final String KEY_INFO_EATEN = "eaten";
+
+    public static final String KEY_DAY_PART = "daypart";
+    public static final String KEY_DAY_CALORIES = "calories";
 
     private RecyclerView mDayParts;
     private ArrayList<DayPart> mDayPartsList = new ArrayList<>();
@@ -58,7 +67,12 @@ public class MainFragment extends BaseFragment {
 
     public ArrayList<DayPart> getEmptyDayParts() {
         ArrayList<DayPart> emptyParts = new ArrayList<>();
-        for (int i = 0; i < 4; i++) emptyParts.add(new DayPart(i));
+        for (int i = 0; i < 4; i++) emptyParts.add(DayPart.empty(i));
         return emptyParts;
+    }
+
+    @Override
+    public <T> void onFragmentAction(T data, int key) {
+        Log.d("MainFragment", "onFragmentAction");
     }
 }

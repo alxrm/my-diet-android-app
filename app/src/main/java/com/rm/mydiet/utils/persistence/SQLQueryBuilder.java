@@ -54,6 +54,7 @@ public class SQLQueryBuilder {
     public static final String TYPE_TEXT = " TEXT ";
     public static final String TYPE_INT = " INTEGER ";
     public static final String NULL = " NULL ";
+    public static final String DEFAULT = " DEFAULT ";
     //endregion
 
     private static StringBuilder sBuilder;

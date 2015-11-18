@@ -56,28 +56,10 @@
         android:overScrollMode="never"
         />
 
-
-    <include
-        layout="@layout/box_day_footer"
-        android:id="@+id/day_footer"
-        android:layout_width="match_parent"
-        android:layout_height="92dp"
-        android:layout_alignParentBottom="true"/>
-
-    <include
-        layout="@layout/box_day_timer"
-        android:id="@+id/day_timer"
+    <FrameLayout
+        android:id="@+id/day_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/day_parts"
-        android:layout_above="@id/day_footer"/>
-
-    <include
-        layout="@layout/box_day_eaten"
-        android:id="@+id/day_eaten"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/day_parts"
-        android:layout_above="@id/day_footer"/>
+        android:layout_below="@id/day_parts"/>
 
 </RelativeLayout>

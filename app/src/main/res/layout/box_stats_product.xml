@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/prod_info_stat_box"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_centerHorizontal="true">
+
+        <ProgressBar
+            android:id="@+id/prod_info_stat_progress"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/info_progress_background"
+            android:progressDrawable="@drawable/info_progress_formatter"
+            android:max="100"
+            android:progress="60"
+            android:indeterminate="false"
+            style="?android:attr/progressBarStyleHorizontal"/>
+
+        <TextView
+            android:id="@+id/prod_info_stat_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="@android:color/black"
+            android:text="3 g."/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/prod_info_stat_badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/prod_info_stat_box"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/badge_background"
+        android:textColor="@android:color/black"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="Carbs"/>
+
+</RelativeLayout>

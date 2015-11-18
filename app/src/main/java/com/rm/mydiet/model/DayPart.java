@@ -1,5 +1,8 @@
 package com.rm.mydiet.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.rm.mydiet.utils.Prefs;
 
 import java.util.ArrayList;
@@ -9,57 +12,112 @@ import static com.rm.mydiet.utils.Prefs.KEY_TIMER_OFFSET;
 /**
  * Created by alex
  */
-public class DayPart {
+public class DayPart implements Parcelable {
 
     public static final int PART_BREAKFAST = 0;
     public static final int PART_LUNCH = 1;
     public static final int PART_SNACK = 2;
     public static final int PART_DINNER = 3;
 
-    private ArrayList<Eating> mEatings = new ArrayList<>();
-    private int mPartKey;
-    private long mTimerOffset;
-    private boolean mIsSelected;
+    private final int mPartId;
 
-    public DayPart(int partKey) {
+    private ArrayList<EatenProduct> mEatenProducts = new ArrayList<>();
+    private long mTimerOffset;
+    private boolean mExists;
+    private boolean mSelected = false;
+    private long mDay;
+
+    protected DayPart(Parcel in) {
+        mPartId = in.readInt();
+        mTimerOffset = in.readLong();
+        mExists = in.readByte() != 0;
+        mDay = in.readLong();
+    }
+
+    public static DayPart empty(int partId) {
+        return new DayPart(partId, true);
+    }
+
+    private DayPart(int partId, boolean exists) {
+        this.mPartId = partId;
+        this.mExists = exists;
+        setTimerOffset(partId);
+    }
+
+    public DayPart(int partKey, long day) {
         if (partKey > 4) partKey = 0;
         if (partKey < 0) partKey = 4;
-        mPartKey = partKey;
+        this.mPartId = partKey;
+        this.mDay = day;
+        this.mExists = false;
         setTimerOffset(partKey);
     }
 
-    private void setTimerOffset(int partKey) {
+    private void setTimerOffset(int partId) {
         mTimerOffset = Prefs.get().getLong(
-                KEY_TIMER_OFFSET + partKey,
-                1000 * 3600 * (4 * (partKey + 2) + 1)
+                KEY_TIMER_OFFSET + partId,
+                1000 * 3600 * (4 * (partId + 2))
         );
     }
 
-    public ArrayList<Eating> getEatings() {
-        return mEatings;
+    public ArrayList<EatenProduct> getEatenProducts() {
+        return mEatenProducts;
     }
 
-    public void setEatings(ArrayList<Eating> eatings) {
-        mEatings = eatings;
+    public void setEatenProducts(ArrayList<EatenProduct> eatenProducts) {
+        mEatenProducts = eatenProducts;
     }
 
-    public void addEating(Eating e) {
-        mEatings.add(e);
+    public void addEatenProduct(EatenProduct e) {
+        mEatenProducts.add(e);
     }
 
-    public int getPartKey() {
-        return mPartKey;
+    public int getPartId() {
+        return mPartId;
     }
 
-    public boolean isSelected() {
-        return mIsSelected;
-    }
-
-    public void setSelected(boolean isSelected) {
-        mIsSelected = isSelected;
+    public boolean isExists() {
+        return mExists;
     }
 
     public long getTimerOffset() {
         return mTimerOffset;
+    }
+
+    public long getDay() {
+        return mDay;
+    }
+
+    public static final Creator<DayPart> CREATOR = new Creator<DayPart>() {
+        @Override
+        public DayPart createFromParcel(Parcel in) {
+            return new DayPart(in);
+        }
+
+        @Override
+        public DayPart[] newArray(int size) {
+            return new DayPart[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(mPartId);
+        dest.writeLong(mTimerOffset);
+        dest.writeByte((byte) (mExists ? 1 : 0));
+        dest.writeLong(mDay);
+    }
+
+    public boolean isSelected() {
+        return mSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        mSelected = selected;
     }
 }

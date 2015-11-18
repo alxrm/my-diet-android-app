@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
+import com.rm.mydiet.utils.InputValidator;
 import com.rm.mydiet.utils.Prefs;
 import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
@@ -24,7 +25,8 @@ import java.util.Calendar;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SettingsFragment extends BaseFragment implements DatePickerDialog.OnDateSetListener {
+public class SettingsFragment extends BaseFragment
+        implements DatePickerDialog.OnDateSetListener {
 
     public static final String KEY_WEIGHT = "weight_key";
     public static final String KEY_HEIGHT = "height_key";
@@ -227,9 +229,5 @@ public class SettingsFragment extends BaseFragment implements DatePickerDialog.O
     @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
         updateField(TimeUtil.getDate(year, monthOfYear, dayOfMonth), KEY_BIRTH);
-    }
-
-    private interface InputValidator {
-        boolean isValid(int data);
     }
 }

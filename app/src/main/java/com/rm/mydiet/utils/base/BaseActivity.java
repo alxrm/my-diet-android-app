@@ -2,6 +2,7 @@ package com.rm.mydiet.utils.base;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -20,10 +21,9 @@ import com.rm.mydiet.ui.StatsFragment;
 public class BaseActivity extends AppCompatActivity {
 
     protected Toolbar mToolbar;
-    protected Runnable mFragmentAction;
+    protected FragmentManager mFragmentManager;
     private NavigationView mNavigationView;
     private DrawerLayout mDrawerLayout;
-    private FragmentManager mFragmentManager;
 
     @Override
     public void setContentView(int layoutResID) {
@@ -33,27 +33,6 @@ public class BaseActivity extends AppCompatActivity {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.drawer_view);
 //        mNavigationView.setBackgroundResource(R.drawable.drawer_background);
-        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                runOnUiThread(mFragmentAction);
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
 
         mFragmentManager = getFragmentManager();
 
@@ -99,7 +78,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void switchFragment(final BaseFragment fragment, final String title) {
-        mFragmentAction = new Runnable() {
+
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 FragmentTransaction transaction = mFragmentManager.beginTransaction();
@@ -109,6 +89,6 @@ public class BaseActivity extends AppCompatActivity {
                         .replace(R.id.container, fragment)
                         .commit();
             }
-        };
+        }, 200);
     }
 }

@@ -85,7 +85,7 @@ public class TimeUtil {
 
         long result = calendar.getTimeInMillis();
 
-        Log.d("TimeUtil", "Today in millis: " + result);
+//        Log.d("TimeUtil", "Today in millis: " + result);
 
         return result;
     }
@@ -114,6 +114,14 @@ public class TimeUtil {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, monthOfYear, dayOfMonth, 0, 0, 0);
         return calendar.getTimeInMillis();
+    }
+
+    public static int calculateTimerProgress(long start, long globalFinish, long left) {
+        long localFinish = globalFinish - start;
+        long past = localFinish - left;
+        int progress = (int) ((float) past / localFinish * 100);
+        Log.d("TimeUtil", "progress " + progress);
+        return progress;
     }
 
     public static String formatCountDown(long left) {

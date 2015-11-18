@@ -46,9 +46,9 @@ public class DayPartsAdapter extends RecyclerView.Adapter<DayPartsAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         DayPart dayPart = mDayPartList.get(position);
-        holder.mBadge.setVisibility(dayPart.getEatings().isEmpty() ? View.GONE : View.VISIBLE);
+        holder.mBadge.setVisibility(dayPart.getEatenProducts().isEmpty() ? View.GONE : View.VISIBLE);
         holder.itemView.setSelected(dayPart.isSelected());
-        switch (dayPart.getPartKey()) {
+        switch (dayPart.getPartId()) {
             case DayPart.PART_BREAKFAST:
                 holder.mIcon.setImageResource(R.drawable.breakfast);
                 break;
@@ -71,7 +71,7 @@ public class DayPartsAdapter extends RecyclerView.Adapter<DayPartsAdapter.ViewHo
 
     public void setItemSelected(int position) {
         for (DayPart dayPart : mDayPartList)
-            dayPart.setSelected(dayPart.getPartKey() == position);
+            dayPart.setSelected(dayPart.getPartId() == position);
         notifyDataSetChanged();
     }
 

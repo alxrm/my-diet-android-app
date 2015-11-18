@@ -8,4 +8,5 @@
     <color name="colorWindowBackground">#fff</color>
     <color name="textColor">#84000000</color>
     <color name="dividerColor">#0c000000</color>
+    <color name="colorCountSelector">#D3EBCA</color>
 </resources>

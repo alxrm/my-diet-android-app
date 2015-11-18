@@ -1,13 +1,67 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context="com.rm.mydiet.ui.TimerFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <include
+        layout="@layout/box_timer_footer"
+        android:id="@+id/day_footer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment"/>
+        android:layout_height="92dp"
+        android:layout_alignParentBottom="true"/>
 
-</FrameLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/day_timer_progress"
+            android:layout_width="268dp"
+            android:layout_height="268dp"
+            android:background="@drawable/timer_progress_background"
+            android:progressDrawable="@drawable/timer_progress_formatter"
+            android:layout_centerInParent="true"
+            android:max="100"
+            android:progress="0"
+            android:indeterminate="false"
+            style="?android:attr/progressBarStyleHorizontal"/>
+
+        <TextView
+            android:id="@+id/day_timer_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:textSize="48sp"
+            android:textColor="@android:color/black"
+            android:text="0:00:00"/>
+
+        <TextView
+            android:id="@+id/day_timer_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@id/day_timer_countdown"
+            android:background="@drawable/badge_background"
+            android:textColor="@android:color/black"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/day_timer_advice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/day_timer_countdown"
+            android:gravity="center"
+            android:textColor="@android:color/black"
+            android:text="@string/timer_advice_text"
+            android:padding="8dp"/>
+
+    </RelativeLayout>
+
+</RelativeLayout>
