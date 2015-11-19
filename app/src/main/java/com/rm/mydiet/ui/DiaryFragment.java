@@ -15,13 +15,10 @@ import android.widget.TextView;
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.DayPart;
 import com.rm.mydiet.model.EatenProduct;
-import com.rm.mydiet.model.Product;
 import com.rm.mydiet.ui.adapter.TimelineAdapter;
 import com.rm.mydiet.utils.Prefs;
-import com.rm.mydiet.utils.persistence.DatabaseListener;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import static com.rm.mydiet.ui.MainFragment.KEY_DAY_CALORIES;
 import static com.rm.mydiet.ui.MainFragment.KEY_DAY_PART;
@@ -31,7 +28,7 @@ import static com.rm.mydiet.utils.Prefs.KEY_MAX_CALS;
  * A simple {@link Fragment} subclass.
  */
 public class DiaryFragment extends TimelineFragment
-        implements View.OnClickListener, DatabaseListener {
+        implements View.OnClickListener {
 
     private TextView mNoProductsMessage;
     private DayPart mCurrentDayPart;
@@ -80,9 +77,8 @@ public class DiaryFragment extends TimelineFragment
 
         mProductsList = (RecyclerView) findViewById(R.id.day_eaten_list);
         mNoProductsMessage = (TextView) findViewById(R.id.day_eaten_text);
+        mNoProductsMessage.setText(getEmptyMessageDayPart());
         boolean isEmpty = mEatenProducts.isEmpty();
-        switchProductsList(isEmpty);
-        switchFooter(isEmpty);
 
         mCalsBox = (LinearLayout) findViewById(R.id.day_cals);
         mCalsProgress = (ProgressBar) findViewById(R.id.day_cals_left);
@@ -95,6 +91,9 @@ public class DiaryFragment extends TimelineFragment
 
         mAddFood.setOnClickListener(this);
         mAddMore.setOnClickListener(this);
+
+        switchProductsList(isEmpty);
+        switchFooter(isEmpty);
     }
 
     private void switchProductsList(boolean isEmpty) {
@@ -105,8 +104,8 @@ public class DiaryFragment extends TimelineFragment
             mTimeLineAdapter = new TimelineAdapter(mEatenProducts);
             mTimeLineAdapter.setOnItemClickListener(new TimelineAdapter.OnItemClickListener() {
                 @Override
-                public <T> void onItemClick(T product, int position) {
-                    showProductInfo((Product) product);
+                public void onItemClick(View v, int position) {
+                    showProductInfo(mEatenProducts.get(position));
                 }
             });
             mProductsList.setAdapter(mTimeLineAdapter);
@@ -124,23 +123,22 @@ public class DiaryFragment extends TimelineFragment
         mAddMore.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 
-    private void showProductInfo(Product product) {
-        // TODO implement this
+    private String getEmptyMessageDayPart() {
+        String prefix = "Добавьте продукты, которые\nвы съели на ";
+        switch (mCurrentDayPart.getPartId()) {
+            case DayPart.PART_BREAKFAST: return prefix + "завтрак";
+            case DayPart.PART_LUNCH: return prefix + "обед";
+            case DayPart.PART_SNACK: return prefix + "полдник";
+            case DayPart.PART_DINNER: return prefix + "ужин";
+            default: return "Error";
+        }
+    }
+
+    private void showProductInfo(EatenProduct product) {
+
     }
 
     private void addFood() {
         // TODO implement this
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onReceiveData(Collection<?> data) {
-        mEatenProducts = (ArrayList<EatenProduct>) data;
-        switchFooter(true);
-    }
-
-    @Override
-    public void onError(Exception e) {
-
     }
 }

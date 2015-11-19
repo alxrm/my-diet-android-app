@@ -18,7 +18,7 @@ public class DayPartsAdapter extends RecyclerView.Adapter<DayPartsAdapter.ViewHo
 
     public interface OnItemClickListener {
 
-        <T> void onItemClick(T data, int position);
+        void onItemClick(View v, int position);
     }
 
     private OnItemClickListener mListener;

@@ -2,6 +2,7 @@ package com.rm.mydiet.ui;
 
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,15 +14,19 @@ import android.view.ViewGroup;
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.DayPart;
 import com.rm.mydiet.ui.adapter.DayPartsAdapter;
+import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
+import com.rm.mydiet.utils.persistence.DatabaseListener;
+import com.rm.mydiet.utils.persistence.DatabaseManager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MainFragment extends BaseFragment
-        implements OnFragmentInteractionListener {
+        implements OnFragmentInteractionListener, DatabaseListener {
 
 
     public static final String KEY_INFO_PRODUCT = "product";
@@ -41,7 +46,6 @@ public class MainFragment extends BaseFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // TODO init some logic part
     }
 
     @Override
@@ -54,25 +58,83 @@ public class MainFragment extends BaseFragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        initDayParts();
-    }
-
-    private void initDayParts() {
         mDayParts = (RecyclerView) findViewById(R.id.day_parts);
         mDayParts.setLayoutManager(new GridLayoutManager(getActivity(), 4));
-        mDayPartsList = getEmptyDayParts();
-        mDayPartsAdapter = new DayPartsAdapter(mDayPartsList);
-        mDayParts.setAdapter(mDayPartsAdapter);
-    }
-
-    public ArrayList<DayPart> getEmptyDayParts() {
-        ArrayList<DayPart> emptyParts = new ArrayList<>();
-        for (int i = 0; i < 4; i++) emptyParts.add(DayPart.empty(i));
-        return emptyParts;
+        DatabaseManager.getInstance().retrieveDayParts(TimeUtil.getToday(), this);
     }
 
     @Override
     public <T> void onFragmentAction(T data, int key) {
-        Log.d("MainFragment", "onFragmentAction");
+        switch (key) {
+            case FRAGMENT_TIMER: {
+                DayPart part = mDayPartsList.get((Integer) data);
+                part.setExists(true);
+                showDayPartData(part);
+                DatabaseManager.getInstance().addDayPart(part);
+                break;
+            }
+            case FRAGMENT_DAIRY: {
+                break;
+            }
+            case FRAGMENT_PROD_INFO: {
+                // TODO implement this
+                break;
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onReceiveData(Collection<?> data) {
+        mDayPartsList = (ArrayList<DayPart>) data;
+        findRelevant(mDayPartsList);
+        mDayPartsAdapter = new DayPartsAdapter(mDayPartsList);
+        mDayPartsAdapter.setOnItemClickListener(new DayPartsAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int position) {
+                mDayPartsAdapter.setItemSelected(position);
+                showDayPartData(mDayPartsList.get(position));
+            }
+        });
+        mDayParts.setAdapter(mDayPartsAdapter);
+    }
+
+    private void findRelevant(ArrayList<DayPart> dayPartsList) {
+        DayPart selected;
+        for (DayPart dayPart : dayPartsList) {
+            Log.d("MainFragment", "findRelevant - dayPart.isExists(): "
+                    + dayPart.isExists());
+            if ((dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTime()) {
+                showDayPartData(dayPart);
+                return;
+            }
+        }
+        selected = dayPartsList.get(0);
+        showDayPartData(selected);
+    }
+
+    private void showDayPartData(DayPart dayPart) {
+        TimelineFragment fragment;
+        boolean hasTimer = (dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTime();
+        dayPart.setSelected(true);
+        if (hasTimer) {
+            if (dayPart.isExists()) {
+                fragment = DiaryFragment.newInstance(dayPart, 0);
+            } else {
+                fragment = TimerFragment.newInstance(dayPart, 0);
+            }
+        } else {
+            fragment = DiaryFragment.newInstance(dayPart, 0);
+        }
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .replace(R.id.container_day, fragment)
+                .commit();
+    }
+
+    @Override
+    public void onError(Exception e) {
+
     }
 }

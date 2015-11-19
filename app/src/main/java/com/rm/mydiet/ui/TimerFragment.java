@@ -2,12 +2,14 @@ package com.rm.mydiet.ui;
 
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
@@ -16,11 +18,15 @@ import com.rm.mydiet.utils.TimeUtil;
 
 import static com.rm.mydiet.ui.MainFragment.KEY_DAY_CALORIES;
 import static com.rm.mydiet.ui.MainFragment.KEY_DAY_PART;
+import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_TIMER;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class TimerFragment extends TimelineFragment {
+
+    private CountDownTimer mCountDown;
+    private int mCalories;
 
     private ProgressBar mTimerProgress;
     private TextView mTimerBadge;
@@ -29,8 +35,8 @@ public class TimerFragment extends TimelineFragment {
     private DayPart mCurrentDayPart;
     private long mTimerOffset;
     private long mDayStart;
-    private CountDownTimer mCountDown;
-    private int mCalories;
+
+    private RelativeLayout mSkipTimerButton;
 
     public TimerFragment() {
         // Required empty public constructor
@@ -46,6 +52,11 @@ public class TimerFragment extends TimelineFragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -55,24 +66,28 @@ public class TimerFragment extends TimelineFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mCurrentDayPart = (DayPart) getArguments().getParcelable(KEY_DAY_PART);
         mCalories = getArguments().getInt(KEY_DAY_CALORIES);
-        if (mCurrentDayPart != null) {
-            mDayStart = TimeUtil.getToday();
-            mTimerOffset = mCurrentDayPart.getTimerOffset();
-        } else {
-            throw new RuntimeException("Null dayPart");
-        }
+        mCurrentDayPart = (DayPart) getArguments().getParcelable(KEY_DAY_PART);
+        mDayStart = mCurrentDayPart.getDay();
+        mTimerOffset = mCurrentDayPart.getTimerOffset();
 
         mTimerProgress = (ProgressBar) findViewById(R.id.day_timer_progress);
         mTimerBadge = (TextView) findViewById(R.id.day_timer_badge);
         mTimerAdvice = (TextView) findViewById(R.id.day_timer_advice);
         mTimerCdText = (TextView) findViewById(R.id.day_timer_countdown);
+        mSkipTimerButton = (RelativeLayout) findViewById(R.id.skip_timer_button);
+        mSkipTimerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopTimer(false);
+            }
+        });
+
         initTimerProgress();
     }
 
     private void initTimerProgress() {
-        long future = mTimerOffset - TimeUtil.unixTime();
+        long future = (mTimerOffset + mDayStart) - TimeUtil.unixTime();
         mTimerBadge.setText(getBadgeMessage());
 //        mTimerAdvice.setText("");
 
@@ -91,9 +106,22 @@ public class TimerFragment extends TimelineFragment {
 
             @Override
             public void onFinish() {
-                mInteractionListener.onFragmentAction(null, MainFragment.FRAGMENT_TIMER);
+                stopTimer(true);
             }
         };
+        mCountDown.start();
+    }
+
+    private void stopTimer(boolean isFinish) {
+        if (!isFinish) mCountDown.cancel();
+        mInteractionListener.onFragmentAction(mCurrentDayPart.getPartId(), FRAGMENT_TIMER);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mCountDown.cancel();
+        mCountDown = null;
     }
 
     private String getBadgeMessage() {

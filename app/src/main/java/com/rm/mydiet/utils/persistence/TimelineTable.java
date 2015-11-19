@@ -23,7 +23,7 @@ public interface TimelineTable {
     String CREATE = SQLQueryBuilder.getInstance()
             .create(TIMELINE_TABLE)
             .columnsStart()
-            .column(COLUMN_DAY_START, new String[]{TYPE_INT, NOT + NULL})
+            .column(COLUMN_DAY_START, new String[]{TYPE_TEXT, NOT + NULL})
             .column(COLUMN_PART_ID, new String[]{TYPE_INT, NOT + NULL})
             .column(COLUMN_PRODUCTS, new String[]{TYPE_TEXT, DEFAULT + " \"[]\" "})
             .columnsEnd()

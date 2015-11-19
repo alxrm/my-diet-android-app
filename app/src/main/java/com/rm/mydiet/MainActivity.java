@@ -42,7 +42,6 @@ public class MainActivity extends BaseActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

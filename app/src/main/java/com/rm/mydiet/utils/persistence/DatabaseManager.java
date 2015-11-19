@@ -34,7 +34,6 @@ import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_NAME;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_PROTEINS;
 import static com.rm.mydiet.utils.persistence.ProductsTable.PRODUCTS_TABLE;
 import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.ALL;
-import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.EQUALS;
 import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.LIKE;
 import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_DAY_START;
 import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_PART_ID;
@@ -75,11 +74,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
         sCallbacks = new ArrayList<>();
     }
 
-    public void retrieveDayParts(final DatabaseListener listener, final long start) {
+    public void retrieveDayParts(final long day, final DatabaseListener listener) {
         Runnable loadTimelineTask = new Runnable() {
             @Override
             public void run() {
-                loadDayParts(getDayPartsCursor(start), listener);
+                loadDayParts(getDayPartsCursor(day / 1000), day, listener);
             }
         };
         if (sDatabaseUpdated) {
@@ -106,10 +105,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
     public void addDayPart(DayPart dayPart) {
         ContentValues values = new ContentValues();
         SQLiteDatabase writableDatabase = getWritableDatabase();
-        values.put(COLUMN_DAY_START, dayPart.getDay());
+        values.put(COLUMN_DAY_START, String.valueOf(dayPart.getDay() / 1000));
         values.put(COLUMN_PART_ID, dayPart.getPartId());
         values.put(COLUMN_PRODUCTS, getJsonFromProducts(dayPart.getEatenProducts()));
-        writableDatabase.insert(TIMELINE_TABLE, null, values);
+        long id = writableDatabase.insert(TIMELINE_TABLE, null, values);
+        Log.d("DatabaseManager", "addDayPart id " + id);
     }
 
     public void updateDayPart(DayPart dayPart) {
@@ -117,7 +117,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         SQLiteDatabase writableDatabase = getWritableDatabase();
         String clause = COLUMN_DAY_START + "=?" + " AND " + COLUMN_PART_ID + "=?";
         String[] dayPartArgs = new String[2];
-        dayPartArgs[0] = String.valueOf(dayPart.getDay());
+        dayPartArgs[0] = String.valueOf(dayPart.getDay() / 1000);
         dayPartArgs[1] = String.valueOf(dayPart.getPartId());
         values.put(COLUMN_PRODUCTS, getJsonFromProducts(dayPart.getEatenProducts()));
         writableDatabase.update(TIMELINE_TABLE, values, clause, dayPartArgs);
@@ -129,10 +129,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 .select(ALL)
                 .from(TIMELINE_TABLE)
                 .where()
-                .integerClause(COLUMN_DAY_START, EQUALS, start)
+                .integerClause(COLUMN_DAY_START, LIKE, start)
                 .orderBy(new String[] { COLUMN_PART_ID })
                 .build();
         Cursor data = readableDatabase.rawQuery(selectQuery, null);
+        Log.d("DatabaseManager", "getDayPartsCursor - data.getCount(): "
+                + data.getCount());
         data.moveToFirst();
         return data;
     }
@@ -149,23 +151,18 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    private void loadDayParts(final Cursor data, final DatabaseListener listener) {
-        final ArrayList<DayPart> dayPartsTmp = new ArrayList<>(data.getCount());
-        final boolean isFull = data.getCount() == 4;
+    private void loadDayParts(final Cursor data,
+                              final long day,
+                              final DatabaseListener listener) {
+        final ArrayList<DayPart> dayPartsTmp = getEmptyDayPartsForDay(day);
         Runnable loadTask = new Runnable() {
             @Override
             public void run() {
-                if (data.getCount() != 0) {
+                if (data.getCount() > 0) {
                     do {
-                        final DayPart dayPart = getDayPart(data);
-                        dayPartsTmp.add(dayPart);
+                        final DayPart dayPart = getDayPart(data, day);
+                        dayPartsTmp.set(dayPart.getPartId(), dayPart);
                     } while (data.moveToNext());
-                }
-
-                if (!isFull) {
-                    for (int i = dayPartsTmp.size(); i < 4; i++) {
-                        dayPartsTmp.add(i, DayPart.empty(i));
-                    }
                 }
             }
         };
@@ -206,8 +203,8 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 .execute();
     }
 
-    private DayPart getDayPart(Cursor data) {
-        DayPart dayPart = new DayPart(data.getInt(1), data.getLong(0));
+    private DayPart getDayPart(Cursor data, long day) {
+        DayPart dayPart = new DayPart(data.getInt(1), day);
         dayPart.setEatenProducts(getProductsFromJson(data.getString(2)));
         return dayPart;
     }
@@ -265,20 +262,30 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     }
 
+    private ArrayList<DayPart> getEmptyDayPartsForDay(long day) {
+        ArrayList<DayPart> dayParts = new ArrayList<>(4);
+        for (int i = 0; i < 4; i++)
+            dayParts.add(DayPart.empty(i, day));
+        return dayParts;
+    }
+
     private String getJsonFromProducts(ArrayList<EatenProduct> products) {
         String resultJson = "[]";
         try {
             JSONObject product;
             JSONArray all = new JSONArray();
 
-            for (EatenProduct prod : products) {
-                product = new JSONObject();
-                product.put(JSON_TIME, prod.getTime());
-                product.put(JSON_ID, prod.getProduct().getId());
-                all.put(product);
+            if (products.size() > 0) {
+                for (EatenProduct prod : products) {
+                    product = new JSONObject();
+                    product.put(JSON_TIME, prod.getTime());
+                    product.put(JSON_ID, prod.getProduct().getId());
+                    all.put(product);
+                }
+
+                resultJson = all.toString();
             }
 
-            resultJson = all.toString();
             Log.d("DatabaseManager", "getJsonFromProducts products: " + resultJson);
             return resultJson;
         } catch (JSONException e) {
@@ -293,6 +300,10 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     private int getIntegerFromDatabase(String f) {
         return Integer.valueOf(f);
+    }
+
+    private long getLongFromDatabase(String f) {
+        return Long.valueOf(f);
     }
 
     @Override

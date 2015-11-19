@@ -119,16 +119,13 @@ public class TimeUtil {
     public static int calculateTimerProgress(long start, long globalFinish, long left) {
         long localFinish = globalFinish - start;
         long past = localFinish - left;
-        int progress = (int) ((float) past / localFinish * 100);
-        Log.d("TimeUtil", "progress " + progress);
-        return progress;
+        return (int) ((float) past / localFinish * 100);
     }
 
     public static String formatCountDown(long left) {
         long second = (left / 1000) % 60;
         long minute = (left / (1000 * 60)) % 60;
         long hour = (left / (1000 * 60 * 60)) % 24;
-
         return String.format("%02d:%02d:%02d", hour, minute, second);
     }
 }

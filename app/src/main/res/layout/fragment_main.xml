@@ -57,7 +57,7 @@
         />
 
     <FrameLayout
-        android:id="@+id/day_content"
+        android:id="@+id/container_day"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/day_parts"/>

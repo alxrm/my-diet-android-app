@@ -34,29 +34,30 @@ public class DayPart implements Parcelable {
         mDay = in.readLong();
     }
 
-    public static DayPart empty(int partId) {
-        return new DayPart(partId, true);
+    public static DayPart empty(int partId, long day) {
+        return new DayPart(partId, false, day);
     }
 
-    private DayPart(int partId, boolean exists) {
+    private DayPart(int partId, boolean exists, long day) {
         this.mPartId = partId;
         this.mExists = exists;
+        this.mDay = day;
         setTimerOffset(partId);
     }
 
-    public DayPart(int partKey, long day) {
-        if (partKey > 4) partKey = 0;
-        if (partKey < 0) partKey = 4;
-        this.mPartId = partKey;
+    public DayPart(int partId, long day) {
+        if (partId > 4) partId = 0;
+        if (partId < 0) partId = 4;
+        this.mPartId = partId;
         this.mDay = day;
-        this.mExists = false;
-        setTimerOffset(partKey);
+        this.mExists = true;
+        setTimerOffset(partId);
     }
 
     private void setTimerOffset(int partId) {
         mTimerOffset = Prefs.get().getLong(
                 KEY_TIMER_OFFSET + partId,
-                1000 * 3600 * (4 * (partId + 2))
+                1000 * 3600 * (4 * (partId + 2) + 2)
         );
     }
 
@@ -78,6 +79,10 @@ public class DayPart implements Parcelable {
 
     public boolean isExists() {
         return mExists;
+    }
+
+    public void setExists(boolean exists) {
+        this.mExists = exists;
     }
 
     public long getTimerOffset() {

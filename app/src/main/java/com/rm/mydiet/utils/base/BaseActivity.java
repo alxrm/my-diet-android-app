@@ -77,7 +77,7 @@ public class BaseActivity extends AppCompatActivity {
         return mToolbar;
     }
 
-    protected void switchFragment(final BaseFragment fragment, final String title) {
+    public void switchFragment(final BaseFragment fragment, final String title) {
 
         new Handler().postDelayed(new Runnable() {
             @Override

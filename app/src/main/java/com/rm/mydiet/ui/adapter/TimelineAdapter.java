@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
-        <T> void onItemClick(T data, int position);
+        void onItemClick(View view, int position);
     }
 
     private OnItemClickListener mListener;
@@ -88,11 +88,10 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
         public void onClick(View v) {
 
             if (mClickListener != null)
-                this.mClickListener.onItemClick(v, getPosition());
+                this.mClickListener.onItemClick(v, getAdapterPosition());
         }
 
         public void setOnItemClickListener(OnItemClickListener listener) {
-
             mClickListener = listener;
         }
     }
