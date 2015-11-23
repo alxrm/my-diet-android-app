@@ -23,6 +23,8 @@
             android:paddingStart="18dp"
             android:background="@null"
             android:inputType="number"
+            android:maxLength="4"
+            android:selectAllOnFocus="true"
             android:text="150"
             />
 

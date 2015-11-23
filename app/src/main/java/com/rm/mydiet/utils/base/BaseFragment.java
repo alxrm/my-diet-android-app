@@ -27,9 +27,7 @@ public class BaseFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mRootView = view;
-        /*if (mTitle == null) {
-            mParent.getToolbar().setVisibility(View.GONE);
-        } else*/ if (mParent != null && mParent.getToolbar() != null) {
+        if (mParent != null && mParent.getToolbar() != null) {
             mParent.getToolbar().setVisibility(View.VISIBLE);
             mParent.getToolbar().setTitle(mTitle);
         }

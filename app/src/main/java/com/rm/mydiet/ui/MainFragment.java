@@ -3,6 +3,7 @@ package com.rm.mydiet.ui;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.DayPart;
+import com.rm.mydiet.model.EatenProduct;
 import com.rm.mydiet.ui.adapter.DayPartsAdapter;
 import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
@@ -29,15 +31,9 @@ public class MainFragment extends BaseFragment
         implements OnFragmentInteractionListener, DatabaseListener {
 
 
-    public static final String KEY_INFO_PRODUCT = "product";
-    public static final String KEY_INFO_EATEN = "eaten";
-
-    public static final String KEY_DAY_PART = "daypart";
-    public static final String KEY_DAY_CALORIES = "calories";
-
     private RecyclerView mDayParts;
-    private ArrayList<DayPart> mDayPartsList = new ArrayList<>();
     private DayPartsAdapter mDayPartsAdapter;
+    private ArrayList<DayPart> mDayPartsList = new ArrayList<>();
 
     public MainFragment() {
         // Required empty public constructor
@@ -64,7 +60,7 @@ public class MainFragment extends BaseFragment
     }
 
     @Override
-    public <T> void onFragmentAction(T data, int key) {
+    public <T> void onFragmentAction(T data, String key) {
         switch (key) {
             case FRAGMENT_TIMER: {
                 DayPart part = mDayPartsList.get((Integer) data);
@@ -74,13 +70,54 @@ public class MainFragment extends BaseFragment
                 break;
             }
             case FRAGMENT_DAIRY: {
+                Intent starter = new Intent(getActivity(), AddProductActivity.class);
+                Bundle callbackData = (Bundle) data;
+                long currentTime = callbackData.getLong(DataTransfering.CALLBACK_DIARY_TIME);
+                int dayPart = callbackData.getInt(DataTransfering.CALLBACK_DIARY_DAY_PART);
+                long time = TimeUtil.isToday(currentTime) ? TimeUtil.unixTime() : currentTime;
+                starter.putExtra(DataTransfering.ACTIVITY_ADD_KEY_DAY_PART, dayPart);
+                starter.putExtra(DataTransfering.ACTIVITY_ADD_KEY_TIME, time);
+                startActivityForResult(starter, DataTransfering.ACTIVITY_ADD_CODE_REQUEST);
                 break;
             }
-            case FRAGMENT_PROD_INFO: {
-                // TODO implement this
+            case FRAGMENT_DAIRY_LIST: {
+                // TODO ACTIVITY USE HASHCODE
+//                EatenProduct product = ((EatenProduct) data);
+//                ProductInfoFragment fragment = ProductInfoFragment.newInstance(product, null);
+//                mParent.addFragment(fragment, "Информация о продукте");
                 break;
             }
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // TODO FROM 2 ACTIVITIES SWITCH CASE
+
+        Log.d("MainFragment", "onActivityResult OUT");
+
+        switch (resultCode) {
+            case DataTransfering.ACTIVITY_ADD_CODE_RESULT: {
+                Log.d("MainFragment", "onActivityResult INSIDE");
+                Bundle resultData = data.getBundleExtra(DataTransfering.ACTIVITY_ADD_KEY_RESULT_DATA);
+                int dayPartId = resultData.getInt(DataTransfering.CALLBACK_PRODUCT_INFO_DAY_PART);
+                EatenProduct eaten = resultData.getParcelable(DataTransfering.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT);
+                DayPart updated = mDayPartsList.get(dayPartId);
+
+                updated.addEatenProduct(eaten);
+                updateDayParts(updated);
+                showDayPartData(updated);
+                break;
+            }
+            case DataTransfering.ACTIVITY_EDIT_CODE_RESULT: {
+                break;
+            }
+        }
+    }
+
+    private void updateDayParts(DayPart updated) {
+        mDayPartsList.set(updated.getPartId(), updated);
     }
 
     @SuppressWarnings("unchecked")
@@ -92,19 +129,29 @@ public class MainFragment extends BaseFragment
         mDayPartsAdapter.setOnItemClickListener(new DayPartsAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int position) {
-                mDayPartsAdapter.setItemSelected(position);
-                showDayPartData(mDayPartsList.get(position));
+                if (position >= 0 && position < 4) {
+                    mDayPartsAdapter.setItemSelected(position);
+                    showDayPartData(mDayPartsList.get(position));
+                }
             }
         });
         mDayParts.setAdapter(mDayPartsAdapter);
     }
 
+    private int calculateCalories(ArrayList<DayPart> dayPartsList) {
+        int cals = 0;
+        for (DayPart dayPart : dayPartsList) {
+            for (EatenProduct eaten : dayPart.getEatenProducts()) {
+                cals += eaten.getCount() * eaten.getProduct().getCalories();
+            }
+        }
+        return cals;
+    }
+
     private void findRelevant(ArrayList<DayPart> dayPartsList) {
         DayPart selected;
         for (DayPart dayPart : dayPartsList) {
-            Log.d("MainFragment", "findRelevant - dayPart.isExists(): "
-                    + dayPart.isExists());
-            if ((dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTime()) {
+            if (!dayPart.isExists() && hasTimer(dayPart)) {
                 showDayPartData(dayPart);
                 return;
             }
@@ -115,22 +162,29 @@ public class MainFragment extends BaseFragment
 
     private void showDayPartData(DayPart dayPart) {
         TimelineFragment fragment;
-        boolean hasTimer = (dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTime();
+        int currentCals = calculateCalories(mDayPartsList);
+
         dayPart.setSelected(true);
-        if (hasTimer) {
+
+        if (hasTimer(dayPart)) {
             if (dayPart.isExists()) {
-                fragment = DiaryFragment.newInstance(dayPart, 0);
+                fragment = DiaryFragment.newInstance(dayPart, currentCals);
             } else {
-                fragment = TimerFragment.newInstance(dayPart, 0);
+                fragment = TimerFragment.newInstance(dayPart, currentCals);
             }
         } else {
             fragment = DiaryFragment.newInstance(dayPart, 0);
         }
+
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         transaction
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.container_day, fragment)
-                .commit();
+                .commitAllowingStateLoss();
+    }
+
+    private boolean hasTimer(DayPart dayPart) {
+        return (dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTime();
     }
 
     @Override

@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.EatenProduct;
@@ -32,7 +33,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
 
         View itemView = LayoutInflater
                 .from(parent.getContext())
-                .inflate(R.layout.product_item, parent, false);
+                .inflate(R.layout.item_product, parent, false);
 
         ViewHolder holder = new ViewHolder(itemView);
 
@@ -45,14 +46,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        /**
-         *
-         * Set data to views here
-         * For example:
-         *
-         * holder.someTextView.setText("Hello World");
-         *
-         */
+        holder.mName.setText(mEatenProductList.get(position).getProduct().getName());
     }
 
     @Override
@@ -69,18 +63,12 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.ViewHo
             implements View.OnClickListener {
 
         private OnItemClickListener mClickListener;
+        private TextView mName;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            /**
-             * Inflate Views here
-             *
-             * For example:
-             *
-             * TextView someTextView = (TextView) itemView.findViewById(...);
-             */
-
+            mName = (TextView) itemView.findViewById(R.id.product_name);
             itemView.setOnClickListener(this);
         }
 

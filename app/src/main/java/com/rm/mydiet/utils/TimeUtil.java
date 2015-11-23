@@ -116,6 +116,10 @@ public class TimeUtil {
         return calendar.getTimeInMillis();
     }
 
+    public static boolean isToday(long dayInMillis) {
+        return (getToday()/1000) == (getStartOfTheDay(dayInMillis)/1000);
+    }
+
     public static int calculateTimerProgress(long start, long globalFinish, long left) {
         long localFinish = globalFinish - start;
         long past = localFinish - left;

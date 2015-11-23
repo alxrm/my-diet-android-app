@@ -5,9 +5,10 @@ package com.rm.mydiet.ui;
  */
 public interface OnFragmentInteractionListener {
 
-    int FRAGMENT_TIMER = 1000;
-    int FRAGMENT_DAIRY = 1001;
-    int FRAGMENT_PROD_INFO = 1010;
+    String FRAGMENT_TIMER = "timer";
+    String FRAGMENT_DAIRY = "diary_add";
+    String FRAGMENT_DAIRY_LIST = "diary_list";
+    String FRAGMENT_DIARY_EATEN_PRODUCT_CREATED = "diary_edit";
 
-    <T> void onFragmentAction(T data, int key);
+    <T> void onFragmentAction(T data, String key);
 }

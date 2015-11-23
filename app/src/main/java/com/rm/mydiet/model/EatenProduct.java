@@ -69,4 +69,10 @@ public class EatenProduct implements Parcelable {
         dest.writeLong(mTime);
         dest.writeInt(mCount);
     }
+
+    @Override
+    public int hashCode() {
+        if (mProduct == null || mTime == 0) return super.hashCode();
+        return mProduct.hashCode() | Long.valueOf(mTime).hashCode();
+    }
 }

@@ -10,16 +10,17 @@
     </style>
 
     <!--<style name="AppTheme.WinterTheme" parent="Theme.AppCompat.Light.NoActionBar">-->
-        <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
-        <!--<item name="colorPrimary">#00BCD4</item>-->
-        <!--<item name="colorPrimaryDark">#0097A7</item>-->
-        <!--<item name="colorAccent">#00E676</item>-->
+    <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
+    <!--<item name="colorPrimary">#00BCD4</item>-->
+    <!--<item name="colorPrimaryDark">#0097A7</item>-->
+    <!--<item name="colorAccent">#00E676</item>-->
     <!--</style>-->
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Light">
         <item name="colorPrimary">@android:color/white</item>
         <item name="android:textColorPrimary">@color/textColor</item>
     </style>
+
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <style name="AppTheme.StatusBarStub">

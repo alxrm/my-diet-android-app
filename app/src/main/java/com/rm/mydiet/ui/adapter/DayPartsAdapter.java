@@ -46,7 +46,7 @@ public class DayPartsAdapter extends RecyclerView.Adapter<DayPartsAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         DayPart dayPart = mDayPartList.get(position);
-        holder.mBadge.setVisibility(dayPart.getEatenProducts().isEmpty() ? View.GONE : View.VISIBLE);
+        holder.mBadge.setVisibility(dayPart.isExists() ? View.VISIBLE : View.GONE);
         holder.itemView.setSelected(dayPart.isSelected());
         switch (dayPart.getPartId()) {
             case DayPart.PART_BREAKFAST:

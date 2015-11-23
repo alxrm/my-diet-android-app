@@ -18,8 +18,8 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:padding="6dp"
         android:scaleType="centerInside"
+        android:src="@drawable/photo"
         tools:ignore="ContentDescription"/>
 
     <RelativeLayout
@@ -36,15 +36,17 @@
             android:layout_margin="2dp"
             android:textSize="16sp"
             android:ellipsize="end"
-            android:singleLine="true"/>
+            android:singleLine="true"
+            android:text="Jratva"/>
 
         <TextView
-            android:id="@+id/product_info"
+            android:id="@+id/product_cals"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/product_name"
             android:layout_margin="2dp"
             android:textSize="14sp"
+            android:text="123 kkal"
             />
     </RelativeLayout>
 </RelativeLayout>

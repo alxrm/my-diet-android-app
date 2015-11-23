@@ -2,6 +2,7 @@ package com.rm.mydiet.ui;
 
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -18,24 +19,27 @@ import android.widget.TextView;
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.EatenProduct;
 import com.rm.mydiet.model.Product;
-import com.rm.mydiet.utils.InputValidator;
 import com.rm.mydiet.utils.TextWatcherAdapter;
-import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
 
-import static com.rm.mydiet.ui.MainFragment.KEY_INFO_EATEN;
-import static com.rm.mydiet.ui.MainFragment.KEY_INFO_PRODUCT;
-import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_PROD_INFO;
+import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_DIARY_EATEN_PRODUCT_CREATED;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ProductInfoFragment extends BaseFragment {
 
+    //region Vars and consts
+    private static final int DEFAULT_COUNT = 1;
+
+    private boolean mIsInteractive;
+    private Bundle mParentData;
+
     private EatenProduct mEaten;
-    private Product mProd;
+    private Product mProduct;
     private int mCount;
     private long mTime;
+    private int mPart;
 
     private RelativeLayout mProteinsBox;
     private TextView mProteinsText;
@@ -58,26 +62,25 @@ public class ProductInfoFragment extends BaseFragment {
     private RelativeLayout mAddBox;
     private ImageView mProceedButton;
     private EditText mCountInput;
-    private InputValidator mValidator;
     private Spinner mTypeSelector;
+    //endregion
 
-    public static ProductInfoFragment newInstance(Product product,
-                                                  OnFragmentInteractionListener listener) {
+    // TODO TIME, PART, PRODUCT !
+
+    public static ProductInfoFragment newInstance(Product product) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(KEY_INFO_PRODUCT, product);
+        arguments.putParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT, product);
         ProductInfoFragment fragment = new ProductInfoFragment();
         fragment.setArguments(arguments);
-        fragment.setInteractionListener(listener);
         return fragment;
     }
 
-    public static ProductInfoFragment newInstance(EatenProduct eatenProduct,
-                                                  OnFragmentInteractionListener listener) {
+    public static ProductInfoFragment newInstance(EatenProduct eatenProduct, int dayPart) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(MainFragment.KEY_INFO_EATEN, eatenProduct);
+        arguments.putParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT, eatenProduct);
+        arguments.putInt(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART, dayPart);
         ProductInfoFragment fragment = new ProductInfoFragment();
         fragment.setArguments(arguments);
-        fragment.setInteractionListener(listener);
         return fragment;
     }
 
@@ -86,24 +89,34 @@ public class ProductInfoFragment extends BaseFragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getActivity() instanceof OnFragmentInteractionListener)
+            mInteractionListener = (OnFragmentInteractionListener) getActivity();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mEaten = (EatenProduct) getArguments().getParcelable(KEY_INFO_EATEN);
+        mEaten = getArguments().getParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
         if (mEaten != null) {
-            mProd = mEaten.getProduct();
+            setIsInteractive(true);
+            mPart = getArguments().getInt(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART);
+            mProduct = mEaten.getProduct();
             mTime = mEaten.getTime();
             mCount = mEaten.getCount();
         } else {
-            mProd = (Product) getArguments().getParcelable(KEY_INFO_PRODUCT);
-            mCount = 1;
-            mTime = TimeUtil.unixTime();
-        }
-        mValidator = new InputValidator() {
-            @Override
-            public boolean isValid(int data) {
-                return data > 0 && data <= 1000;
+            mProduct = getArguments().getParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT);
+            mCount = DEFAULT_COUNT;
+            mParentData = mParent.getParentData();
+            if (mParentData != null) {
+                setIsInteractive(true);
+                mTime = mParentData.getLong(DataTransfering.PARENT_PRODUCT_INFO_TIME);
+                mPart = mParentData.getInt(DataTransfering.PARENT_PRODUCT_INFO_DAY_PART);
+            } else {
+                setIsInteractive(false);
             }
-        };
+        }
     }
 
     @Override
@@ -117,7 +130,7 @@ public class ProductInfoFragment extends BaseFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mProdName = (TextView) findViewById(R.id.prod_info_name);
-        mProdName.setText(mProd.getName());
+        mProdName.setText(mProduct.getName());
 
         mProteinsBox = (RelativeLayout) findViewById(R.id.prod_info_proteins_box);
         mProteinsText = (TextView) mProteinsBox.findViewById(R.id.prod_info_stat_text);
@@ -151,47 +164,43 @@ public class ProductInfoFragment extends BaseFragment {
             @Override
             public void afterTextChanged(Editable s) {
                 mCount = TextUtils.isEmpty(s.toString()) ?
-                        0 : Integer.parseInt(s.toString());
-                if (mCount > 1000) {
-                    mCount = 1000;
-                    mCountInput.setText("1000");
-                }
-                if (mCount < 0) {
-                    mCount = 0;
-                    mCountInput.setText("0");
-                }
+                        DEFAULT_COUNT : Integer.parseInt(s.toString());
                 initProductStats(mCount);
             }
         });
 
-        if (mEaten == null)
+        mProceedButton.setVisibility(isInteractive() ? View.VISIBLE : View.GONE);
         mProceedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EatenProduct eatenProduct = getEatenProduct();
-                if (eatenProduct == null) return;
-
-                mInteractionListener.onFragmentAction(
-                        eatenProduct,
-                        FRAGMENT_PROD_INFO
-                );
+                completeAddProduct();
             }
         });
+    }
 
+    private void completeAddProduct() {
+        EatenProduct eatenProduct = getEatenProduct();
+        if (eatenProduct == null) return;
+
+        Bundle data = new Bundle();
+        data.putParcelable(DataTransfering.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT, eatenProduct);
+        data.putInt(DataTransfering.CALLBACK_PRODUCT_INFO_DAY_PART, mPart);
+        mInteractionListener.onFragmentAction(data, FRAGMENT_DIARY_EATEN_PRODUCT_CREATED);
     }
 
     private EatenProduct getEatenProduct() {
-        if (!mValidator.isValid(mCount)) return null;
+        if (mCount <= 0 || mProduct == null) return null;
         mEaten = mEaten == null ? new EatenProduct(mTime) : mEaten;
         mEaten.setCount(mCount);
+        mEaten.setProduct(mProduct);
         return mEaten;
     }
 
     private void initProductStats(int scalar) {
-        float proteins = mProd.getProteins() * scalar;
-        float carbs = mProd.getCarbohydrates() * scalar;
-        float fats = mProd.getFats() * scalar;
-        int cals = mProd.getCalories() * scalar;
+        float proteins = mProduct.getProteins() * scalar;
+        float carbs = mProduct.getCarbohydrates() * scalar;
+        float fats = mProduct.getFats() * scalar;
+        int cals = mProduct.getCalories() * scalar;
         float full = proteins + carbs + fats;
 
         mProteinsText.setText(String.format("%s г.", proteins));
@@ -208,5 +217,13 @@ public class ProductInfoFragment extends BaseFragment {
 
     private int getProgress(float value, float full) {
         return (int) (value / full * 100);
+    }
+
+    private boolean isInteractive() {
+        return mIsInteractive;
+    }
+
+    private void setIsInteractive(boolean isInteractive) {
+        mIsInteractive = isInteractive;
     }
 }

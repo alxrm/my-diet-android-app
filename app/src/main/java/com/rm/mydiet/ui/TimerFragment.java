@@ -14,11 +14,11 @@ import android.widget.TextView;
 
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.DayPart;
+import com.rm.mydiet.utils.Prefs;
 import com.rm.mydiet.utils.TimeUtil;
 
-import static com.rm.mydiet.ui.MainFragment.KEY_DAY_CALORIES;
-import static com.rm.mydiet.ui.MainFragment.KEY_DAY_PART;
 import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_TIMER;
+import static com.rm.mydiet.utils.Prefs.KEY_MAX_CALS;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -26,7 +26,8 @@ import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_TIMER;
 public class TimerFragment extends TimelineFragment {
 
     private CountDownTimer mCountDown;
-    private int mCalories;
+    private int mCurrentCalories;
+    private int mMaxCalories;
 
     private ProgressBar mTimerProgress;
     private TextView mTimerBadge;
@@ -44,8 +45,8 @@ public class TimerFragment extends TimelineFragment {
 
     public static TimerFragment newInstance(DayPart dayPart, int cals) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(KEY_DAY_PART, dayPart);
-        arguments.putInt(MainFragment.KEY_DAY_CALORIES, cals);
+        arguments.putParcelable(DataTransfering.FRAGMENT_TIMER_KEY_DAY_PART, dayPart);
+        arguments.putInt(DataTransfering.FRAGMENT_TIMER_KEY_CALORIES, cals);
         TimerFragment fragment = new TimerFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -66,8 +67,9 @@ public class TimerFragment extends TimelineFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mCalories = getArguments().getInt(KEY_DAY_CALORIES);
-        mCurrentDayPart = (DayPart) getArguments().getParcelable(KEY_DAY_PART);
+        mCurrentDayPart = (DayPart) getArguments().getParcelable(DataTransfering.FRAGMENT_TIMER_KEY_DAY_PART);
+        mCurrentCalories = getArguments().getInt(DataTransfering.FRAGMENT_TIMER_KEY_CALORIES);
+        mMaxCalories = Prefs.get().getInt(KEY_MAX_CALS, 2500);
         mDayStart = mCurrentDayPart.getDay();
         mTimerOffset = mCurrentDayPart.getTimerOffset();
 
@@ -84,6 +86,8 @@ public class TimerFragment extends TimelineFragment {
         });
 
         initTimerProgress();
+        initCaloriesViews();
+        setCaloriesProgress(mCurrentCalories, mMaxCalories);
     }
 
     private void initTimerProgress() {

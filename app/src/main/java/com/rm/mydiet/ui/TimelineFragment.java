@@ -1,10 +1,14 @@
 package com.rm.mydiet.ui;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.rm.mydiet.R;
 import com.rm.mydiet.utils.base.BaseFragment;
 
 /**
@@ -14,6 +18,7 @@ public class TimelineFragment extends BaseFragment {
 
     protected ProgressBar mCalsProgress;
     protected TextView mCalsText;
+    protected LinearLayout mCalsBox;
     protected OnFragmentInteractionListener mInteractionListener;
 
     @Override
@@ -21,6 +26,12 @@ public class TimelineFragment extends BaseFragment {
         super.onAttach(context);
         Log.d("TimelineFragment", "onAttach");
         mInteractionListener = (MainFragment) getParentFragment();
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initCaloriesViews();
     }
 
     protected void setCaloriesProgress(int curCals, int maxCals) {
@@ -31,5 +42,11 @@ public class TimelineFragment extends BaseFragment {
             mCalsProgress.setProgress(calsProgress);
             mCalsText.setText(String.format("%d/%d", curCals, maxCals));
         }
+    }
+
+    protected void initCaloriesViews() {
+        mCalsBox = (LinearLayout) findViewById(R.id.day_cals);
+        mCalsProgress = (ProgressBar) findViewById(R.id.day_cals_left);
+        mCalsText = (TextView) findViewById(R.id.day_cals_text);
     }
 }
