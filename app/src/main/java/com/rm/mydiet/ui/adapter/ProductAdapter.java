@@ -1,8 +1,6 @@
 package com.rm.mydiet.ui.adapter;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +14,9 @@ import com.rm.mydiet.model.Product;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collection;
+
+import static com.rm.mydiet.MyDietApplication.context;
 
 /**
  * Created by alex
@@ -23,24 +24,20 @@ import java.util.ArrayList;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
 
     public interface OnItemClickListener {
-
         void onItemClick(View v, int position);
     }
 
     private OnItemClickListener mListener;
     private ArrayList<Product> mProductList;
     private ArrayList<EatenProduct> mEatenList;
-    private Context mContext;
 
-    public ProductAdapter(ArrayList<Product> productList, Context context) {
-        mContext = context;
-        mProductList = productList;
-        Log.d("ProductAdapter", "ProductAdapter list size " + mProductList.size());
-    }
-
-    public ProductAdapter(ArrayList<EatenProduct> productList) {
-        mEatenList = productList;
-        Log.d("ProductAdapter", "ProductAdapter list size " + mEatenList.size());
+    @SuppressWarnings("unchecked")
+    public ProductAdapter(Collection<?> productList, boolean isEaten) {
+        if (isEaten) {
+            mEatenList = (ArrayList<EatenProduct>) productList;
+        } else {
+            mProductList = (ArrayList<Product>) productList;
+        }
     }
 
     @Override
@@ -66,7 +63,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         holder.mProductName.setText(currentProd.getName());
         holder.mProductCals.setText(currentProd.getCalories() + " ккал");
 
-        Picasso.with(mContext)
+        Picasso.with(context())
                 .load(Api.getImageUrl(currentProd.getImg()))
                 .placeholder(R.drawable.photo)
                 .into(holder.mProductIcon);

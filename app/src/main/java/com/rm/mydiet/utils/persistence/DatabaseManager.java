@@ -244,6 +244,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     private ArrayList<EatenProduct> getProductsFromJson(String json) {
+        Log.d("DatabaseManager", "getProductsFromJson json " + json);
         ArrayList<EatenProduct> result = new ArrayList<>();
         try {
             JSONArray items = new JSONArray(json);
@@ -254,6 +255,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 eatenProduct = new EatenProduct(eatenData.getLong(JSON_TIME));
                 eatenProduct.setCount(eatenData.getInt(JSON_COUNT));
                 eatenProduct.setProduct(getProductById(eatenData.getString(JSON_ID)));
+                result.add(eatenProduct);
             }
             return result;
         } catch (JSONException e) {
@@ -279,6 +281,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 for (EatenProduct prod : products) {
                     product = new JSONObject();
                     product.put(JSON_TIME, prod.getTime());
+                    product.put(JSON_COUNT, prod.getCount());
                     product.put(JSON_ID, prod.getProduct().getId());
                     all.put(product);
                 }
@@ -290,6 +293,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
             return resultJson;
         } catch (JSONException e) {
             e.printStackTrace();
+            Log.d("DatabaseManager", "getJsonFromProducts ERROR products" + resultJson);
             return resultJson;
         }
     }

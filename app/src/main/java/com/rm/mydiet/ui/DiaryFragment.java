@@ -95,7 +95,7 @@ public class DiaryFragment extends TimelineFragment
         mNoProductsMessage.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         if (!isEmpty) {
-            mTimeLineAdapter = new ProductAdapter(mEatenProducts);
+            mTimeLineAdapter = new ProductAdapter(mEatenProducts, true);
             mTimeLineAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(View v, int position) {

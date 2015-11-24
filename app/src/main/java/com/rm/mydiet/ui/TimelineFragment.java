@@ -36,11 +36,12 @@ public class TimelineFragment extends BaseFragment {
 
     protected void setCaloriesProgress(int curCals, int maxCals) {
         int calsProgress = (int) ((float) curCals / maxCals * 100);
-        Log.d("DiaryFragment", "setCaloriesProgress calsProgress " + calsProgress);
 
         if (mCalsProgress != null && mCalsText != null) {
             mCalsProgress.setProgress(calsProgress);
             mCalsText.setText(String.format("%d/%d", curCals, maxCals));
+        } else {
+            Log.d("TimelineFragment", "NULL PROGRESSES");
         }
     }
 

@@ -65,7 +65,7 @@ public class MainFragment extends BaseFragment
             case FRAGMENT_TIMER: {
                 DayPart part = mDayPartsList.get((Integer) data);
                 part.setExists(true);
-                showDayPartData(part);
+                showDayPartData(part, false);
                 DatabaseManager.getInstance().addDayPart(part);
                 break;
             }
@@ -104,10 +104,9 @@ public class MainFragment extends BaseFragment
                 int dayPartId = resultData.getInt(DataTransfering.CALLBACK_PRODUCT_INFO_DAY_PART);
                 EatenProduct eaten = resultData.getParcelable(DataTransfering.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT);
                 DayPart updated = mDayPartsList.get(dayPartId);
-
                 updated.addEatenProduct(eaten);
                 updateDayParts(updated);
-                showDayPartData(updated);
+                showDayPartData(updated, true);
                 break;
             }
             case DataTransfering.ACTIVITY_EDIT_CODE_RESULT: {
@@ -117,7 +116,15 @@ public class MainFragment extends BaseFragment
     }
 
     private void updateDayParts(DayPart updated) {
+        boolean isExists = updated.isExists();
+        updated.setExists(true);
         mDayPartsList.set(updated.getPartId(), updated);
+        mDayPartsAdapter.updateList(mDayPartsList);
+        if (isExists) {
+            DatabaseManager.getInstance().updateDayPart(updated);
+        } else {
+            DatabaseManager.getInstance().addDayPart(updated);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -131,7 +138,7 @@ public class MainFragment extends BaseFragment
             public void onItemClick(View v, int position) {
                 if (position >= 0 && position < 4) {
                     mDayPartsAdapter.setItemSelected(position);
-                    showDayPartData(mDayPartsList.get(position));
+                    showDayPartData(mDayPartsList.get(position), false);
                 }
             }
         });
@@ -152,15 +159,15 @@ public class MainFragment extends BaseFragment
         DayPart selected;
         for (DayPart dayPart : dayPartsList) {
             if (!dayPart.isExists() && hasTimer(dayPart)) {
-                showDayPartData(dayPart);
+                showDayPartData(dayPart, false);
                 return;
             }
         }
         selected = dayPartsList.get(0);
-        showDayPartData(selected);
+        showDayPartData(selected, false);
     }
 
-    private void showDayPartData(DayPart dayPart) {
+    private void showDayPartData(DayPart dayPart, boolean updating) {
         TimelineFragment fragment;
         int currentCals = calculateCalories(mDayPartsList);
 
@@ -173,12 +180,12 @@ public class MainFragment extends BaseFragment
                 fragment = TimerFragment.newInstance(dayPart, currentCals);
             }
         } else {
-            fragment = DiaryFragment.newInstance(dayPart, 0);
+            fragment = DiaryFragment.newInstance(dayPart, currentCals);
         }
 
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        if (!updating) transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         transaction
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .replace(R.id.container_day, fragment)
                 .commitAllowingStateLoss();
     }

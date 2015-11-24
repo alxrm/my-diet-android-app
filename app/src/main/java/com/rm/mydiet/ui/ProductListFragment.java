@@ -61,7 +61,7 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
     @Override
     public void onReceiveData(Collection<?> data) {
         mProductList = (ArrayList<Product>) data;
-        mProductsAdapter = new ProductAdapter(mProductList, getActivity());
+        mProductsAdapter = new ProductAdapter(mProductList, false);
         mProductsAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int position) {

@@ -10,6 +10,7 @@ import com.rm.mydiet.R;
 import com.rm.mydiet.model.DayPart;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Created by alex
@@ -62,6 +63,12 @@ public class DayPartsAdapter extends RecyclerView.Adapter<DayPartsAdapter.ViewHo
                 holder.mIcon.setImageResource(R.drawable.dinner);
                 break;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void updateList(Collection<?> dayParts) {
+        mDayPartList = (ArrayList<DayPart>) dayParts;
+        notifyDataSetChanged();
     }
 
     @Override
