@@ -47,7 +47,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 transaction
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .replace(R.id.container, fragment);
-                transaction.commit();
+                transaction.commitAllowingStateLoss();
             }
         }, 200);
     }

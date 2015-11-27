@@ -25,7 +25,7 @@ public class TimelineFragment extends BaseFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         Log.d("TimelineFragment", "onAttach");
-        mInteractionListener = (MainFragment) getParentFragment();
+        mInteractionListener = (DayFragment) getParentFragment();
     }
 
     @Override
@@ -41,7 +41,7 @@ public class TimelineFragment extends BaseFragment {
             mCalsProgress.setProgress(calsProgress);
             mCalsText.setText(String.format("%d/%d", curCals, maxCals));
         } else {
-            Log.d("TimelineFragment", "NULL PROGRESSES");
+            Log.e("TimelineFragment", "NULL PROGRESSES");
         }
     }
 

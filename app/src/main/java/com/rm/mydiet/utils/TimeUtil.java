@@ -13,8 +13,8 @@ import java.util.Locale;
  */
 public class TimeUtil {
 
-    public static final long DAY_MILLIES = 86400000000L;
-    public static final long FOUR_HOURS_MILLIES = 14400000000L;
+    public static final long DAY_MILLIES = 86400000L;
+    public static final long FOUR_HOURS_MILLIES = 14400000L;
 
     public static void setAlarm(Context context) {
 //        Intent alarmIntent = new Intent(context, CurrencyUpdateReceiver.class);
@@ -100,7 +100,23 @@ public class TimeUtil {
         String resDate;
 
         d.setTime(birth);
-        dateFormat.applyPattern("d MMM yyyy г.");
+//        dateFormat.applyPattern("d MMM yyyy г.");
+
+        resDate = dateFormat.format(d);
+
+        Log.d("TimeUtil", "getDay - resDate: "
+                + resDate);
+
+        return resDate;
+    }
+
+    public static String formatTimelineDate(long day) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM, EEEE", new Locale("ru", "RU"));
+        Date d = new Date();
+        String resDate;
+
+        d.setTime(day);
+//        dateFormat.applyPattern("d MMM yyyy г.");
 
         resDate = dateFormat.format(d);
 

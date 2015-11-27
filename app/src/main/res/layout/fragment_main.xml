@@ -5,7 +5,7 @@
              tools:context="com.rm.mydiet.ui.MainFragment">
 
     <RelativeLayout
-        android:id="@+id/day_selector"
+        android:id="@+id/day_switcher"
         android:layout_width="match_parent"
         android:layout_height="48dp">
 
@@ -36,6 +36,7 @@
             android:layout_centerVertical="true"/>
 
         <TextView
+            android:id="@+id/day_current"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -47,19 +48,11 @@
 
     </RelativeLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/day_parts"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_below="@id/day_selector"
-        android:background="#F5FAF2"
-        android:overScrollMode="never"
-        />
-
-    <FrameLayout
-        android:id="@+id/container_day"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager_day"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/day_parts"/>
+        android:layout_below="@id/day_switcher"
+        />
 
 </RelativeLayout>

@@ -17,6 +17,9 @@ public interface DataTransfering {
     String ACTIVITY_ADD_KEY_TIME = "add_time";
     String ACTIVITY_ADD_KEY_DAY_PART = "add_day_part";
 
+    // day fragment
+    String FRAGMENT_DAY_KEY_START = "day_day";
+
     // diary fragment
     String FRAGMENT_DIARY_KEY_DAY_PART = "diary_day_part";
     String FRAGMENT_DIARY_KEY_CALORIES = "diary_calories";
