@@ -44,8 +44,8 @@ public class DiaryFragment extends TimelineFragment
 
     public static DiaryFragment newInstance(DayPart dayPart, int cals) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(DataTransfering.FRAGMENT_DIARY_KEY_DAY_PART, dayPart);
-        arguments.putInt(DataTransfering.FRAGMENT_DIARY_KEY_CALORIES, cals);
+        arguments.putParcelable(DataTransferring.FRAGMENT_DIARY_KEY_DAY_PART, dayPart);
+        arguments.putInt(DataTransferring.FRAGMENT_DIARY_KEY_CALORIES, cals);
         DiaryFragment fragment = new DiaryFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -65,9 +65,9 @@ public class DiaryFragment extends TimelineFragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mCurrentDayPart = (DayPart) getArguments().getParcelable(DataTransfering.FRAGMENT_DIARY_KEY_DAY_PART);
+        mCurrentDayPart = (DayPart) getArguments().getParcelable(DataTransferring.FRAGMENT_DIARY_KEY_DAY_PART);
         mEatenProducts = mCurrentDayPart.getEatenProducts();
-        mCurrentCalories = getArguments().getInt(DataTransfering.FRAGMENT_DIARY_KEY_CALORIES);
+        mCurrentCalories = getArguments().getInt(DataTransferring.FRAGMENT_DIARY_KEY_CALORIES);
         mMaxCalories = Prefs.get().getInt(KEY_MAX_CALS, 2500);
 
         mProductsList = (RecyclerView) findViewById(R.id.day_eaten_list);
@@ -129,13 +129,16 @@ public class DiaryFragment extends TimelineFragment
     }
 
     private void showProductInfo(EatenProduct product) {
-        mInteractionListener.onFragmentAction(product, FRAGMENT_DAIRY_LIST);
+        Bundle data = new Bundle();
+        data.putParcelable(DataTransferring.CALLBACK_DIARY_EATEN_PRODUCT, product);
+        data.putInt(DataTransferring.CALLBACK_DIARY_DAY_PART, mCurrentDayPart.getPartId());
+        mInteractionListener.onFragmentAction(data, FRAGMENT_DAIRY_LIST);
     }
 
     private void addFood() {
         Bundle data = new Bundle();
-        data.putInt(DataTransfering.CALLBACK_DIARY_DAY_PART, mCurrentDayPart.getPartId());
-        data.putLong(DataTransfering.CALLBACK_DIARY_TIME, mCurrentDayPart.getDay());
+        data.putInt(DataTransferring.CALLBACK_DIARY_DAY_PART, mCurrentDayPart.getPartId());
+        data.putLong(DataTransferring.CALLBACK_DIARY_TIME, mCurrentDayPart.getDay());
         mInteractionListener.onFragmentAction(data, FRAGMENT_DAIRY);
     }
 }

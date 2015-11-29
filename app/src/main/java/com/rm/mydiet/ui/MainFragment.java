@@ -48,7 +48,7 @@ public class MainFragment extends BaseFragment  {
         super.onViewCreated(view, savedInstanceState);
         mCurrentDayText = (TextView) findViewById(R.id.day_current);
         mDayPager = (ViewPager) findViewById(R.id.pager_day);
-        mDayPager.setOffscreenPageLimit(2);
+        mDayPager.setOffscreenPageLimit(3);
         mDayPager.setAdapter(new DayPagerAdapter(getFragmentManager(), TimeUtil.getToday()));
         mDayPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override

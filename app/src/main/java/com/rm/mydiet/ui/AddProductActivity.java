@@ -36,18 +36,18 @@ public class AddProductActivity extends BaseActivity implements OnFragmentIntera
     @Override
     public Bundle getParentData() {
         Bundle data = new Bundle();
-        int part = getIntent().getIntExtra(DataTransfering.ACTIVITY_ADD_KEY_DAY_PART, 0);
-        long time = getIntent().getLongExtra(DataTransfering.ACTIVITY_ADD_KEY_TIME, 0);
-        data.putInt(DataTransfering.PARENT_PRODUCT_INFO_DAY_PART, part);
-        data.putLong(DataTransfering.PARENT_PRODUCT_INFO_TIME, time);
+        int part = getIntent().getIntExtra(DataTransferring.ACTIVITY_ADD_KEY_DAY_PART, 0);
+        long time = getIntent().getLongExtra(DataTransferring.ACTIVITY_ADD_KEY_TIME, 0);
+        data.putInt(DataTransferring.PARENT_PRODUCT_INFO_DAY_PART, part);
+        data.putLong(DataTransferring.PARENT_PRODUCT_INFO_TIME, time);
         return data;
     }
 
     @Override
     public <T> void onFragmentAction(T data, String key) {
         Intent callbackIntent = new Intent();
-        callbackIntent.putExtra(DataTransfering.ACTIVITY_ADD_KEY_RESULT_DATA, (Bundle) data);
-        setResult(DataTransfering.ACTIVITY_ADD_CODE_RESULT, callbackIntent);
+        callbackIntent.putExtra(DataTransferring.ACTIVITY_ADD_KEY_RESULT_DATA, (Bundle) data);
+        setResult(DataTransferring.ACTIVITY_ADD_CODE_RESULT, callbackIntent);
         finish();
     }
 }

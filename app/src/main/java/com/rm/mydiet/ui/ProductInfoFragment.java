@@ -69,7 +69,7 @@ public class ProductInfoFragment extends BaseFragment {
 
     public static ProductInfoFragment newInstance(Product product) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT, product);
+        arguments.putParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT, product);
         ProductInfoFragment fragment = new ProductInfoFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -77,8 +77,8 @@ public class ProductInfoFragment extends BaseFragment {
 
     public static ProductInfoFragment newInstance(EatenProduct eatenProduct, int dayPart) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT, eatenProduct);
-        arguments.putInt(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART, dayPart);
+        arguments.putParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT, eatenProduct);
+        arguments.putInt(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART, dayPart);
         ProductInfoFragment fragment = new ProductInfoFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -98,21 +98,21 @@ public class ProductInfoFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mEaten = getArguments().getParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
+        mEaten = getArguments().getParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
         if (mEaten != null) {
             setIsInteractive(true);
-            mPart = getArguments().getInt(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART);
+            mPart = getArguments().getInt(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART);
             mProduct = mEaten.getProduct();
             mTime = mEaten.getTime();
             mCount = mEaten.getCount();
         } else {
-            mProduct = getArguments().getParcelable(DataTransfering.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT);
+            mProduct = getArguments().getParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT);
             mCount = DEFAULT_COUNT;
             mParentData = mParent.getParentData();
             if (mParentData != null) {
                 setIsInteractive(true);
-                mTime = mParentData.getLong(DataTransfering.PARENT_PRODUCT_INFO_TIME);
-                mPart = mParentData.getInt(DataTransfering.PARENT_PRODUCT_INFO_DAY_PART);
+                mTime = mParentData.getLong(DataTransferring.PARENT_PRODUCT_INFO_TIME);
+                mPart = mParentData.getInt(DataTransferring.PARENT_PRODUCT_INFO_DAY_PART);
             } else {
                 setIsInteractive(false);
             }
@@ -183,8 +183,8 @@ public class ProductInfoFragment extends BaseFragment {
         if (eatenProduct == null) return;
 
         Bundle data = new Bundle();
-        data.putParcelable(DataTransfering.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT, eatenProduct);
-        data.putInt(DataTransfering.CALLBACK_PRODUCT_INFO_DAY_PART, mPart);
+        data.putParcelable(DataTransferring.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT, eatenProduct);
+        data.putInt(DataTransferring.CALLBACK_PRODUCT_INFO_DAY_PART, mPart);
         mInteractionListener.onFragmentAction(data, FRAGMENT_DIARY_EATEN_PRODUCT_CREATED);
     }
 

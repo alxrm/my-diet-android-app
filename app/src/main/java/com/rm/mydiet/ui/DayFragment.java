@@ -37,7 +37,7 @@ public class DayFragment extends BaseFragment
 
     public static DayFragment newInstance(long dayStart) {
         Bundle args = new Bundle();
-        args.putLong(DataTransfering.FRAGMENT_DAY_KEY_START, dayStart);
+        args.putLong(DataTransferring.FRAGMENT_DAY_KEY_START, dayStart);
         DayFragment fragment = new DayFragment();
         fragment.setArguments(args);
         return fragment;
@@ -50,7 +50,7 @@ public class DayFragment extends BaseFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCurrentStart = getArguments().getLong(DataTransfering.FRAGMENT_DAY_KEY_START);
+        mCurrentStart = getArguments().getLong(DataTransferring.FRAGMENT_DAY_KEY_START);
     }
 
     @Override
@@ -81,19 +81,22 @@ public class DayFragment extends BaseFragment
             case FRAGMENT_DAIRY: {
                 Intent starter = new Intent(getActivity(), AddProductActivity.class);
                 Bundle callbackData = (Bundle) data;
-                long currentTime = callbackData.getLong(DataTransfering.CALLBACK_DIARY_TIME);
-                int dayPart = callbackData.getInt(DataTransfering.CALLBACK_DIARY_DAY_PART);
+                long currentTime = callbackData.getLong(DataTransferring.CALLBACK_DIARY_TIME);
+                int dayPart = callbackData.getInt(DataTransferring.CALLBACK_DIARY_DAY_PART);
                 long time = TimeUtil.isToday(currentTime) ? TimeUtil.unixTime() : currentTime;
-                starter.putExtra(DataTransfering.ACTIVITY_ADD_KEY_DAY_PART, dayPart);
-                starter.putExtra(DataTransfering.ACTIVITY_ADD_KEY_TIME, time);
-                startActivityForResult(starter, DataTransfering.ACTIVITY_ADD_CODE_REQUEST);
+                starter.putExtra(DataTransferring.ACTIVITY_ADD_KEY_DAY_PART, dayPart);
+                starter.putExtra(DataTransferring.ACTIVITY_ADD_KEY_TIME, time);
+                startActivityForResult(starter, DataTransferring.ACTIVITY_ADD_CODE_REQUEST);
                 break;
             }
             case FRAGMENT_DAIRY_LIST: {
-                // TODO ACTIVITY USE HASHCODE
-//                EatenProduct product = ((EatenProduct) data);
-//                ProductInfoFragment fragment = ProductInfoFragment.newInstance(product, null);
-//                mParent.addFragment(fragment, "Информация о продукте");
+                Intent starter = new Intent(getActivity(), EditProductActivity.class);
+                Bundle callbackData = (Bundle) data;
+                int dayPart = callbackData.getInt(DataTransferring.CALLBACK_DIARY_DAY_PART);
+                EatenProduct eatenProduct = callbackData.getParcelable(DataTransferring.CALLBACK_DIARY_EATEN_PRODUCT);
+                starter.putExtra(DataTransferring.ACTIVITY_EDIT_KEY_DAY_PART, dayPart);
+                starter.putExtra(DataTransferring.ACTIVITY_EDIT_KEY_EATEN_PRODUCT, eatenProduct);
+                startActivityForResult(starter, DataTransferring.ACTIVITY_EDIT_CODE_REQUEST);
                 break;
             }
         }
@@ -107,18 +110,25 @@ public class DayFragment extends BaseFragment
         Log.d("DayFragment", "onActivityResult OUT");
 
         switch (resultCode) {
-            case DataTransfering.ACTIVITY_ADD_CODE_RESULT: {
+            case DataTransferring.ACTIVITY_ADD_CODE_RESULT: {
                 Log.d("DayFragment", "onActivityResult INSIDE");
-                Bundle resultData = data.getBundleExtra(DataTransfering.ACTIVITY_ADD_KEY_RESULT_DATA);
-                int dayPartId = resultData.getInt(DataTransfering.CALLBACK_PRODUCT_INFO_DAY_PART);
-                EatenProduct eaten = resultData.getParcelable(DataTransfering.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT);
+                Bundle resultData = data.getBundleExtra(DataTransferring.ACTIVITY_ADD_KEY_RESULT_DATA);
+                int dayPartId = resultData.getInt(DataTransferring.CALLBACK_PRODUCT_INFO_DAY_PART);
+                EatenProduct eaten = resultData.getParcelable(DataTransferring.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT);
                 DayPart updated = mDayPartsList.get(dayPartId);
                 updated.addEatenProduct(eaten);
                 updateDayParts(updated);
                 showDayPartData(updated, true);
                 break;
             }
-            case DataTransfering.ACTIVITY_EDIT_CODE_RESULT: {
+            case DataTransferring.ACTIVITY_EDIT_CODE_RESULT: {
+                Bundle resultData = data.getBundleExtra(DataTransferring.ACTIVITY_EDIT_KEY_RESULT_DATA);
+                int dayPartId = resultData.getInt(DataTransferring.CALLBACK_PRODUCT_INFO_DAY_PART);
+                EatenProduct eaten = resultData.getParcelable(DataTransferring.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT);
+                DayPart updated = mDayPartsList.get(dayPartId);
+                updated.updateEatenProduct(eaten);
+                updateDayParts(updated);
+                showDayPartData(updated, true);
                 break;
             }
         }

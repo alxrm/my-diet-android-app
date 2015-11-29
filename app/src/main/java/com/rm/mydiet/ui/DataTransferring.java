@@ -3,12 +3,14 @@ package com.rm.mydiet.ui;
 /**
  * Created by alex
  */
-public interface DataTransfering {
+public interface DataTransferring {
 
     // add product activity
     int ACTIVITY_EDIT_CODE_RESULT = 1001;
     int ACTIVITY_EDIT_CODE_REQUEST = 1011;
+    String ACTIVITY_EDIT_KEY_RESULT_DATA = "edit_result_data";
     String ACTIVITY_EDIT_KEY_DAY_PART = "edit_day_part";
+    String ACTIVITY_EDIT_KEY_EATEN_PRODUCT = "edit_eaten_product";
 
     // add product activity
     int ACTIVITY_ADD_CODE_RESULT = 1000;
@@ -23,6 +25,7 @@ public interface DataTransfering {
     // diary fragment
     String FRAGMENT_DIARY_KEY_DAY_PART = "diary_day_part";
     String FRAGMENT_DIARY_KEY_CALORIES = "diary_calories";
+    String CALLBACK_DIARY_EATEN_PRODUCT = "diary_callback_eaten_product";
     String CALLBACK_DIARY_DAY_PART = "diary_callback_day_part";
     String CALLBACK_DIARY_TIME = "diary_callback_time";
 

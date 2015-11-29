@@ -184,7 +184,7 @@ public class SQLQueryBuilder {
      * INNER JOIN Customers
      * ON Orders.CustomerID=Customers.CustomerID;
      */
-    public SQLQueryBuilder innerJoin(@NonNull String tableName) {
+    public SQLQueryBuilder join(@NonNull String tableName) {
         sBuilder.get().append(INNER_JOIN).append(tableName);
         return this;
     }

@@ -7,4 +7,5 @@
     <string name="timer_advice_text">Выпивай стакан воды\nза 20-30 минут\nдо еды</string>
     <string name="add_products_placeholder_text">Добавьте продукты, которые\nвы съели на</string>
     <string name="title_activity_add_product">AddProductActivity</string>
+    <string name="title_activity_edit_product">EditProductActivity</string>
 </resources>

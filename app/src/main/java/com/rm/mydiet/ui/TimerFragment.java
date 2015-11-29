@@ -45,8 +45,8 @@ public class TimerFragment extends TimelineFragment {
 
     public static TimerFragment newInstance(DayPart dayPart, int cals) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(DataTransfering.FRAGMENT_TIMER_KEY_DAY_PART, dayPart);
-        arguments.putInt(DataTransfering.FRAGMENT_TIMER_KEY_CALORIES, cals);
+        arguments.putParcelable(DataTransferring.FRAGMENT_TIMER_KEY_DAY_PART, dayPart);
+        arguments.putInt(DataTransferring.FRAGMENT_TIMER_KEY_CALORIES, cals);
         TimerFragment fragment = new TimerFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -67,8 +67,8 @@ public class TimerFragment extends TimelineFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mCurrentDayPart = (DayPart) getArguments().getParcelable(DataTransfering.FRAGMENT_TIMER_KEY_DAY_PART);
-        mCurrentCalories = getArguments().getInt(DataTransfering.FRAGMENT_TIMER_KEY_CALORIES);
+        mCurrentDayPart = (DayPart) getArguments().getParcelable(DataTransferring.FRAGMENT_TIMER_KEY_DAY_PART);
+        mCurrentCalories = getArguments().getInt(DataTransferring.FRAGMENT_TIMER_KEY_CALORIES);
         mMaxCalories = Prefs.get().getInt(KEY_MAX_CALS, 2500);
         mDayStart = mCurrentDayPart.getDay();
         mTimerOffset = mCurrentDayPart.getTimerOffset();
@@ -123,9 +123,11 @@ public class TimerFragment extends TimelineFragment {
 
     @Override
     public void onDestroy() {
+        if (mCountDown != null) {
+            mCountDown.cancel();
+            mCountDown = null;
+        }
         super.onDestroy();
-        mCountDown.cancel();
-        mCountDown = null;
     }
 
     private String getBadgeMessage() {

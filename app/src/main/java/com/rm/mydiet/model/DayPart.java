@@ -73,6 +73,16 @@ public class DayPart implements Parcelable {
         mEatenProducts.add(e);
     }
 
+    public void updateEatenProduct(EatenProduct e) {
+        if (mEatenProducts.isEmpty()) return;
+        for (int i = 0; i < mEatenProducts.size(); i++) {
+            if (e.getTime() == mEatenProducts.get(i).getTime()) {
+                mEatenProducts.set(i, e);
+                return;
+            }
+        }
+    }
+
     public int getPartId() {
         return mPartId;
     }
