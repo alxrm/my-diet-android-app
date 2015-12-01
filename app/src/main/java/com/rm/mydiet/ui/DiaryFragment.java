@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,8 +88,6 @@ public class DiaryFragment extends TimelineFragment
     }
 
     private void switchProductsList(boolean isEmpty) {
-        Log.d("DiaryFragment", "switchProductsList - isEmpty: "
-                + isEmpty);
         mProductsList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         mNoProductsMessage.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 

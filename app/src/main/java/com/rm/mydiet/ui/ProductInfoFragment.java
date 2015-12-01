@@ -6,7 +6,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -98,6 +100,7 @@ public class ProductInfoFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         mEaten = getArguments().getParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
         if (mEaten != null) {
             setIsInteractive(true);
@@ -158,6 +161,17 @@ public class ProductInfoFragment extends BaseFragment {
         initAddProductBox();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                break;
+            default: break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void initAddProductBox() {
         mCountInput.setText(String.valueOf(mCount));
         mCountInput.addTextChangedListener(new TextWatcherAdapter() {
@@ -197,6 +211,7 @@ public class ProductInfoFragment extends BaseFragment {
     }
 
     private void initProductStats(int scalar) {
+        Log.d("ProductInfoFragment", "product info " + mProduct.getInfo());
         float proteins = mProduct.getProteins() * scalar;
         float carbs = mProduct.getCarbohydrates() * scalar;
         float fats = mProduct.getFats() * scalar;
@@ -206,7 +221,7 @@ public class ProductInfoFragment extends BaseFragment {
         mProteinsText.setText(String.format("%s г.", proteins));
         mProteinsProgress.setProgress(getProgress(proteins, full));
         mProteinsBadge.setText("Белки");
-        mCarbsText.setText(String.format("%s г.", carbs));
+        mCarbsText.setText(String.format("%f г.", carbs));
         mCarbsProgress.setProgress(getProgress(carbs, full));
         mCarbsBadge.setText("Углеводы");
         mFatsText.setText(String.format("%s г.", fats));

@@ -40,9 +40,10 @@ public interface DataTransferring {
     String CALLBACK_PRODUCT_INFO_EATEN_PRODUCT = "product_info_callback_eaten";
     String CALLBACK_PRODUCT_INFO_DAY_PART = "product_info_callback_day_part";
 
-
-
     // product info parent
     String PARENT_PRODUCT_INFO_DAY_PART = "parent_product_info_day_part";
     String PARENT_PRODUCT_INFO_TIME = "parent_product_info_time";
+
+    // product search list fragment
+    String SAVE_PRODUCT_LIST = "product_list_search_results";
 }

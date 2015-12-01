@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import static com.rm.mydiet.MyDietApplication.context;
+import static com.rm.mydiet.utils.StringUtils.md5;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CALORIES;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CARBOHYDRATES;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_FATS;
@@ -50,11 +51,13 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "diet.db";
     private static final int DB_VERSION = 1;
+    private static final String EMPTY_HASH = md5("");
 
     private static DatabaseManager sInstance;
     private static DBConfig sOldConfig;
     private static DBConfig sNewConfig;
     private static ArrayList<Runnable> sCallbacks = new ArrayList<>();
+    private static String sCurrentQueryHash = EMPTY_HASH;
     private static boolean sDatabaseUpdated = false;
 
     private DatabaseManager(Context context) {
@@ -92,7 +95,23 @@ public class DatabaseManager extends SQLiteOpenHelper {
         Runnable loadProductsTask = new Runnable() {
             @Override
             public void run() {
-                loadProducts(getProductsCursor(), listener);
+                sCurrentQueryHash = EMPTY_HASH;
+                loadProducts(getProductsCursor(), sCurrentQueryHash, listener);
+            }
+        };
+        if (sDatabaseUpdated) {
+            loadProductsTask.run();
+        } else {
+            sCallbacks.add(loadProductsTask);
+        }
+    }
+
+    public void retrieveProducts(final String query, final DatabaseListener listener) {
+        Runnable loadProductsTask = new Runnable() {
+            @Override
+            public void run() {
+                sCurrentQueryHash = md5(query);
+                loadProducts(getProductsCursor(query), sCurrentQueryHash, listener);
             }
         };
         if (sDatabaseUpdated) {
@@ -108,8 +127,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         values.put(COLUMN_DAY_START, String.valueOf(dayPart.getDay() / 1000));
         values.put(COLUMN_PART_ID, dayPart.getPartId());
         values.put(COLUMN_PRODUCTS, getJsonFromProducts(dayPart.getEatenProducts()));
-        long id = writableDatabase.insert(TIMELINE_TABLE, null, values);
-        Log.d("DatabaseManager", "addDayPart id " + id);
+        writableDatabase.insert(TIMELINE_TABLE, null, values);
     }
 
     public void updateDayPart(DayPart dayPart) {
@@ -133,8 +151,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 .orderBy(new String[] { COLUMN_PART_ID })
                 .build();
         Cursor data = readableDatabase.rawQuery(selectQuery, null);
-        Log.d("DatabaseManager", "getDayPartsCursor - data.getCount(): "
-                + data.getCount());
         data.moveToFirst();
         return data;
     }
@@ -144,7 +160,21 @@ public class DatabaseManager extends SQLiteOpenHelper {
         String selectQuery = SQLQueryBuilder.getInstance()
                 .select(ALL)
                 .from(PRODUCTS_TABLE)
-                .orderBy(new String[]{ COLUMN_NAME })
+                .orderBy(new String[]{ COLUMN_NAME, COLUMN_CALORIES })
+                .build();
+        Cursor data = readableDatabase.rawQuery(selectQuery, null);
+        data.moveToFirst();
+        return data;
+    }
+
+    private Cursor getProductsCursor(String query) {
+        SQLiteDatabase readableDatabase = getReadableDatabase();
+        String selectQuery = SQLQueryBuilder.getInstance()
+                .select(ALL)
+                .from(PRODUCTS_TABLE)
+                .where()
+                .stringClause(COLUMN_NAME, LIKE, query)
+                .orderBy(new String[]{COLUMN_NAME, COLUMN_CALORIES })
                 .build();
         Cursor data = readableDatabase.rawQuery(selectQuery, null);
         data.moveToFirst();
@@ -178,7 +208,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 .execute();
     }
 
-    private void loadProducts(final Cursor data, final DatabaseListener listener) {
+    private void loadProducts(final Cursor data,
+                              final String hash,
+                              final DatabaseListener listener) {
         final ArrayList<Product> tmpProducts = new ArrayList<>(data.getCount());
         Runnable loadTask = new Runnable() {
             @Override
@@ -187,14 +219,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
                     do {
                         final Product product = getProduct(data);
                         tmpProducts.add(product);
-                    } while (data.moveToNext());
+                    }
+                    while (data.moveToNext());
                 }
             }
         };
         Runnable onReceive = new Runnable() {
             @Override
             public void run() {
-                listener.onReceiveData(tmpProducts);
+                if (hash.equals(sCurrentQueryHash)) listener.onReceiveData(tmpProducts);
             }
         };
         WorkerThreadExecutor.start()
@@ -244,7 +277,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     private ArrayList<EatenProduct> getProductsFromJson(String json) {
-        Log.d("DatabaseManager", "getProductsFromJson json " + json);
+//        Log.d("DatabaseManager", "getProductsFromJson json " + json);
         ArrayList<EatenProduct> result = new ArrayList<>();
         try {
             JSONArray items = new JSONArray(json);
@@ -289,11 +322,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 resultJson = all.toString();
             }
 
-            Log.d("DatabaseManager", "getJsonFromProducts products: " + resultJson);
             return resultJson;
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("DatabaseManager", "getJsonFromProducts ERROR products" + resultJson);
             return resultJson;
         }
     }
@@ -387,14 +418,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     private void clearProducts() {
-        Log.d("DatabaseManager", "clearProducts");
         SQLiteDatabase db = getWritableDatabase();
         String clearQuery = SQLQueryBuilder.getInstance().delete(PRODUCTS_TABLE).build();
         db.execSQL(clearQuery);
     }
 
     private void pushProducts(final ArrayList<Product> products) {
-        Log.d("DatabaseManager", "pushProducts");
         Runnable pushTask = new Runnable() {
             @Override
             public void run() {

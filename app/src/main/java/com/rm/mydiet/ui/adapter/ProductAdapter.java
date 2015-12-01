@@ -75,6 +75,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
                 mProductList.size() : mEatenList.size();
     }
 
+
+    @SuppressWarnings("unchecked")
+    public void updateList(Collection<?> dataSet) {
+        mProductList = (ArrayList<Product>) dataSet;
+        notifyDataSetChanged();
+    }
+
     public void setOnItemClickListener(OnItemClickListener listener) {
 
         mListener = listener;

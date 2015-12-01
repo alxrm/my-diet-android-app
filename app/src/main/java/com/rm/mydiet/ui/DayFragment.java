@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -107,11 +106,8 @@ public class DayFragment extends BaseFragment
         super.onActivityResult(requestCode, resultCode, data);
         // TODO FROM 2 ACTIVITIES SWITCH CASE
 
-        Log.d("DayFragment", "onActivityResult OUT");
-
         switch (resultCode) {
             case DataTransferring.ACTIVITY_ADD_CODE_RESULT: {
-                Log.d("DayFragment", "onActivityResult INSIDE");
                 Bundle resultData = data.getBundleExtra(DataTransferring.ACTIVITY_ADD_KEY_RESULT_DATA);
                 int dayPartId = resultData.getInt(DataTransferring.CALLBACK_PRODUCT_INFO_DAY_PART);
                 EatenProduct eaten = resultData.getParcelable(DataTransferring.CALLBACK_PRODUCT_INFO_EATEN_PRODUCT);

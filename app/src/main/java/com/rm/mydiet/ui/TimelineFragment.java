@@ -24,7 +24,6 @@ public class TimelineFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.d("TimelineFragment", "onAttach");
         mInteractionListener = (DayFragment) getParentFragment();
     }
 

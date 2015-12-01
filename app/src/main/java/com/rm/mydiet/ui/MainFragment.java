@@ -4,9 +4,8 @@ package com.rm.mydiet.ui;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
-import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,7 @@ import static com.rm.mydiet.utils.TimeUtil.getStartOfTheDay;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFragment extends BaseFragment  {
+public class MainFragment extends BaseFragment {
 
     private ViewPager mDayPager;
     private ArrayList<Long> mDayList = new ArrayList<>();
@@ -34,6 +33,14 @@ public class MainFragment extends BaseFragment  {
 
     public MainFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        for (int i = 0; i < 10; i++) {
+            mDayList.add(getStartOfTheDay(TimeUtil.getToday() - (DAY_MILLIES * i)));
+        }
     }
 
     @Override
@@ -48,7 +55,7 @@ public class MainFragment extends BaseFragment  {
         super.onViewCreated(view, savedInstanceState);
         mCurrentDayText = (TextView) findViewById(R.id.day_current);
         mDayPager = (ViewPager) findViewById(R.id.pager_day);
-        mDayPager.setOffscreenPageLimit(3);
+        mDayPager.setOffscreenPageLimit(2);
         mDayPager.setAdapter(new DayPagerAdapter(getFragmentManager(), TimeUtil.getToday()));
         mDayPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -58,9 +65,7 @@ public class MainFragment extends BaseFragment  {
 
             @Override
             public void onPageSelected(int position) {
-                int pos = DayPagerAdapter.LENGTH - position - 1;
-                Log.d("MainFragment", "onPageSelected - pos: " + pos);
-                long dayStart = getStartOfTheDay(mStartingPoint - (DAY_MILLIES * pos));
+                long dayStart = mDayList.get(getFormattedPosition(position));
                 mCurrentDayText.setText(TimeUtil.formatTimelineDate(dayStart));
             }
 
@@ -69,10 +74,14 @@ public class MainFragment extends BaseFragment  {
 
             }
         });
-        mDayPager.setCurrentItem(DayPagerAdapter.LENGTH - 1);
+        mDayPager.setCurrentItem(mDayList.size() - 1);
     }
 
-    private class DayPagerAdapter extends FragmentStatePagerAdapter {
+    int getFormattedPosition(int pos) {
+        return Math.abs(pos - (mDayList.size() - 2));
+    }
+
+    private class DayPagerAdapter extends FragmentPagerAdapter {
 
         private static final int LENGTH = Integer.MAX_VALUE / 2;
         private static final int MIDDLE = LENGTH / 2;
@@ -84,31 +93,32 @@ public class MainFragment extends BaseFragment  {
 
         @Override
         public Fragment getItem(int position) {
-            long dayStart = getStartOfTheDay(mStartingPoint - (DAY_MILLIES * position));
+//            Log.d("DayPagerAdapter", "pos: " + Math.abs(position - (mDayList.size() - 1)));
+            long dayStart = mDayList.get(getFormattedPosition(position));
             return DayFragment.newInstance(dayStart);
         }
 
         @Override
         public int getCount() {
-            return LENGTH;
+            return mDayList.size() - 1;
         }
 
-        @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            if (position < 2) {
-                super.destroyItem(container, position, object);
-            } else {
-                super.destroyItem(container, LENGTH - position - 1, object);
-            }
-        }
-
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            if (position < 2) {
-                return super.instantiateItem(container, position);
-            } else {
-                return super.instantiateItem(container, LENGTH - position - 1);
-            }
-        }
+//        @Override
+//        public void destroyItem(ViewGroup container, int position, Object object) {
+//            if (position < 2) {
+//                super.destroyItem(container, position, object);
+//            } else {
+//                super.destroyItem(container, LENGTH - position - 1, object);
+//            }
+//        }
+//
+//        @Override
+//        public Object instantiateItem(ViewGroup container, int position) {
+//            if (position < 2) {
+//                return super.instantiateItem(container, position);
+//            } else {
+//                return super.instantiateItem(container, LENGTH - position - 1);
+//            }
+//        }
     }
 }

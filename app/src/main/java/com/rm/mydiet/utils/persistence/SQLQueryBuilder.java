@@ -2,7 +2,6 @@ package com.rm.mydiet.utils.persistence;
 
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -209,7 +208,7 @@ public class SQLQueryBuilder {
 
     public String build() {
         String q = sBuilder.get().toString().trim().replace(" +", SPACE);
-        Log.d("SQLQueryBuilder", "query: " + q);
+//        Log.d("SQLQueryBuilder", "query: " + q);
         return q;
     }
 }

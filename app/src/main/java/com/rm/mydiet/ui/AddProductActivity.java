@@ -14,6 +14,10 @@ public class AddProductActivity extends BaseActivity implements OnFragmentIntera
         super.onCreate(savedInstanceState);
         Log.d("AddProductActivity", "onCreate");
         setContentView(R.layout.box_generic_activity);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
+
         ProductListFragment productListFragment = new ProductListFragment();
         switchFragment(productListFragment, null);
     }
@@ -25,7 +29,8 @@ public class AddProductActivity extends BaseActivity implements OnFragmentIntera
 
     @Override
     protected void onToolbarCreated() {
-        // TODO implement this
+        setTitle("");
+        setSupportActionBar(getToolbar());
     }
 
     @Override

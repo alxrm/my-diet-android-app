@@ -1,8 +1,9 @@
 package com.rm.mydiet.utils.base;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.util.Log;
 import android.view.View;
 
 import com.rm.mydiet.ui.OnFragmentInteractionListener;
@@ -43,5 +44,14 @@ public class BaseFragment extends Fragment {
 
     public void setInteractionListener(OnFragmentInteractionListener interactionListener) {
         mInteractionListener = interactionListener;
+    }
+
+    protected void onBackPressed() {
+        Log.d("BaseFragment", "onBackPressed");
+
+        if (mParent != null) {
+            Log.d("BaseFragment", "onBackPressed");
+            mParent.onBackPressed();
+        }
     }
 }
