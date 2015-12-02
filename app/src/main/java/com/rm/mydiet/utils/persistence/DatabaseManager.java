@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.Response;
@@ -89,44 +90,25 @@ public class DatabaseManager extends SQLiteOpenHelper {
         Runnable loadTimelineTask = new Runnable() {
             @Override
             public void run() {
-                loadDayParts(getDayPartsCursor(day / 1000), day, listener);
+                executeLoadDayParts(day, listener);
             }
         };
-        if (sDatabaseUpdated) {
-            loadTimelineTask.run();
-        } else {
-            sCallbacks.add(loadTimelineTask);
-        }
-    }
 
-    public void retrieveProducts(final DatabaseListener listener) {
-        Runnable loadProductsTask = new Runnable() {
-            @Override
-            public void run() {
-                sCurrentQueryHash = EMPTY_HASH;
-                loadProducts(getProductsCursor(), sCurrentQueryHash, listener);
-            }
-        };
-        if (sDatabaseUpdated) {
-            loadProductsTask.run();
-        } else {
-            sCallbacks.add(loadProductsTask);
-        }
+        if (sDatabaseUpdated) loadTimelineTask.run();
+        else sCallbacks.add(loadTimelineTask);
     }
 
     public void retrieveProducts(final String query, final DatabaseListener listener) {
         Runnable loadProductsTask = new Runnable() {
             @Override
             public void run() {
-                sCurrentQueryHash = md5(query);
-                loadProducts(getProductsCursor(query), sCurrentQueryHash, listener);
+                sCurrentQueryHash = TextUtils.isEmpty(query) ? EMPTY_HASH : md5(query);
+                executeLoadProducts(query, sCurrentQueryHash, listener);
             }
         };
-        if (sDatabaseUpdated) {
-            loadProductsTask.run();
-        } else {
-            sCallbacks.add(loadProductsTask);
-        }
+
+        if (sDatabaseUpdated) loadProductsTask.run();
+        else sCallbacks.add(loadProductsTask);
     }
 
     public void addDayPart(DayPart dayPart) {
@@ -147,6 +129,54 @@ public class DatabaseManager extends SQLiteOpenHelper {
         dayPartArgs[1] = String.valueOf(dayPart.getPartId());
         values.put(COLUMN_PRODUCTS, getJsonFromProducts(dayPart.getEatenProducts()));
         writableDatabase.update(TIMELINE_TABLE, values, clause, dayPartArgs);
+    }
+
+    private void executeLoadProducts(final String query,
+                                     final String hash,
+                                     final DatabaseListener listener) {
+        final ArrayList<Product> products = new ArrayList<>();
+        Runnable fetchTask = new Runnable() {
+            @Override
+            public void run() {
+                Cursor productsCursor = TextUtils.isEmpty(query) ?
+                        getProductsCursor() : getProductsCursor(query);
+                products.addAll(fetchProducts(productsCursor));
+            }
+        };
+        Runnable onReceive = new Runnable() {
+            @Override
+            public void run() {
+                if (hash.equals(sCurrentQueryHash)) {
+                    listener.onReceiveData(products);
+                }
+            }
+        };
+        WorkerThreadExecutor.start()
+                .task(fetchTask)
+                .callback(onReceive)
+                .execute();
+    }
+
+    private void executeLoadDayParts(final long day,
+                                     final DatabaseListener listener) {
+        final ArrayList<DayPart> dayParts = new ArrayList<>();
+        Runnable fetchTask = new Runnable() {
+            @Override
+            public void run() {
+                Cursor dayPartsCursor = getDayPartsCursor(day / 1000);
+                dayParts.addAll(fetchDayParts(dayPartsCursor, day));
+            }
+        };
+        Runnable onReceive = new Runnable() {
+            @Override
+            public void run() {
+                listener.onReceiveData(dayParts);
+            }
+        };
+        WorkerThreadExecutor.start()
+                .task(fetchTask)
+                .callback(onReceive)
+                .execute();
     }
 
     private Cursor getDayPartsCursor(long start) {
@@ -190,59 +220,28 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return data;
     }
 
-    private void loadDayParts(final Cursor data,
-                              final long day,
-                              final DatabaseListener listener) {
+    private ArrayList<DayPart> fetchDayParts(final Cursor data,
+                                             final long day) {
         final ArrayList<DayPart> dayPartsTmp = getEmptyDayPartsForDay(day);
-        Runnable loadTask = new Runnable() {
-            @Override
-            public void run() {
-                if (data.getCount() > 0) {
-                    do {
-                        final DayPart dayPart = getDayPart(data, day);
-                        dayPartsTmp.set(dayPart.getPartId(), dayPart);
-                    } while (data.moveToNext());
-                }
-            }
-        };
-        Runnable onReceive = new Runnable() {
-            @Override
-            public void run() {
-                listener.onReceiveData(dayPartsTmp);
-            }
-        };
-        WorkerThreadExecutor.start()
-                .task(loadTask)
-                .callback(onReceive)
-                .execute();
+        if (data.getCount() > 0) {
+            do {
+                final DayPart dayPart = getDayPart(data, day);
+                dayPartsTmp.set(dayPart.getPartId(), dayPart);
+            } while (data.moveToNext());
+        }
+        return dayPartsTmp;
     }
 
-    private void loadProducts(final Cursor data,
-                              final String hash,
-                              final DatabaseListener listener) {
+    private ArrayList<Product> fetchProducts(final Cursor data) {
         final ArrayList<Product> tmpProducts = new ArrayList<>(data.getCount());
-        Runnable loadTask = new Runnable() {
-            @Override
-            public void run() {
-                if (data.getCount() != 0) {
-                    do {
-                        final Product product = getProduct(data);
-                        tmpProducts.add(product);
-                    }
-                    while (data.moveToNext());
-                }
+        if (data.getCount() != 0) {
+            do {
+                final Product product = getProduct(data);
+                tmpProducts.add(product);
             }
-        };
-        Runnable onReceive = new Runnable() {
-            @Override
-            public void run() {
-                if (hash.equals(sCurrentQueryHash)) listener.onReceiveData(tmpProducts);
-            }
-        };
-        WorkerThreadExecutor.start()
-                .task(loadTask)
-                .callback(onReceive)
-                .execute();
+            while (data.moveToNext());
+        }
+        return tmpProducts;
     }
 
     private DayPart getDayPart(Cursor data, long day) {

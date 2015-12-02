@@ -58,13 +58,16 @@ public class SQLQueryBuilder {
     //endregion
 
     private static final ThreadLocal<StringBuilder> sBuilder = new ThreadLocal<>();
+    private static final ThreadLocal<SQLQueryBuilder> sInstance = new ThreadLocal<>();
 
-    private SQLQueryBuilder() {
-        sBuilder.set(new StringBuilder());
-    }
+    private SQLQueryBuilder() {}
 
     public static SQLQueryBuilder getInstance() {
-        return new SQLQueryBuilder();
+        if (sInstance.get() == null) {
+            sInstance.set(new SQLQueryBuilder());
+        }
+        sBuilder.set(new StringBuilder());
+        return sInstance.get();
     }
 
     private static void removeLastComa() {
@@ -207,8 +210,6 @@ public class SQLQueryBuilder {
     }
 
     public String build() {
-        String q = sBuilder.get().toString().trim().replace(" +", SPACE);
-//        Log.d("SQLQueryBuilder", "query: " + q);
-        return q;
+        return sBuilder.get().toString().trim().replace(" +", SPACE);
     }
 }

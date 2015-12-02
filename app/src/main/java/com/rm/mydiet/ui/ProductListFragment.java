@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.rm.mydiet.R;
@@ -39,6 +40,7 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
     private RelativeLayout mAddProductButton;
     private ArrayList<Product> mProductList = new ArrayList<>();
     private ProductAdapter mProductsAdapter;
+    private ProgressBar mProgress;
 
     public ProductListFragment() {
         // Required empty public constructor
@@ -61,8 +63,10 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mProducts = (RecyclerView) findViewById(R.id.prod_list);
+        mProgress = (ProgressBar) findViewById(R.id.prod_list_progress);
         mProducts.setLayoutManager(new LinearLayoutManager(getActivity()));
         mProductsAdapter = new ProductAdapter(mProductList, false);
+        mProducts.setAdapter(mProductsAdapter);
         mProductsAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View v, int position) {
@@ -83,7 +87,8 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
             }
         });
 
-        DatabaseManager.getInstance().retrieveProducts(this);
+        DatabaseManager.getInstance().retrieveProducts(null, this);
+        setListIsLoading(true);
     }
 
     @Override
@@ -111,11 +116,12 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
             public boolean onQueryTextChange(String query) {
                 if (query.equals("")) {
                     SearchViewHacker.disableCloseButton(mSearchView);
-                    DatabaseManager.getInstance().retrieveProducts(ProductListFragment.this);
+                    DatabaseManager.getInstance().retrieveProducts(null, ProductListFragment.this);
                 } else {
                     SearchViewHacker.setCloseIcon(mSearchView, R.drawable.ic_search_clear);
                     DatabaseManager.getInstance().retrieveProducts(query, ProductListFragment.this);
                 }
+                setListIsLoading(true);
                 return false;
             }
         });
@@ -125,6 +131,11 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
         InputMethodManager inputMethodManager =
                 (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+    }
+
+    private void setListIsLoading(boolean isLoading) {
+        mProducts.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        mProgress.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -146,7 +157,7 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
     public void onReceiveData(Collection<?> data) {
         mProductList = (ArrayList<Product>) data;
         mProductsAdapter.updateList(mProductList, false);
-        mProducts.setAdapter(mProductsAdapter);
+        setListIsLoading(false);
     }
 
     @Override

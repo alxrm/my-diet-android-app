@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,7 +62,6 @@ public class DayFragment extends BaseFragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d("DayFragment", "onViewCreated");
         mDayParts = (RecyclerView) findViewById(R.id.day_parts);
         mDayParts.setLayoutManager(new GridLayoutManager(getActivity(), 4));
         mDayPartsAdapter = new DayPartsAdapter(mDayPartsList);
@@ -78,7 +76,9 @@ public class DayFragment extends BaseFragment
             }
         });
 
-        DatabaseManager.getInstance().retrieveDayParts(mCurrentStart, this);
+        if (mDayPartsList.isEmpty()) {
+            DatabaseManager.getInstance().retrieveDayParts(mCurrentStart, this);
+        }
     }
 
     @Override
@@ -194,11 +194,13 @@ public class DayFragment extends BaseFragment
             fragment = DiaryFragment.newInstance(dayPart, currentCals);
         }
 
-        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
-        if (!updating) transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction
-                .replace(R.id.container_day, fragment)
-                .commitAllowingStateLoss();
+        if (getActivity() != null) {
+            FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+            if (!updating) transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction
+                    .replace(R.id.container_day, fragment)
+                    .commitAllowingStateLoss();
+        }
     }
 
     private boolean hasTimer(DayPart dayPart) {
@@ -211,7 +213,6 @@ public class DayFragment extends BaseFragment
         mDayPartsList = (ArrayList<DayPart>) data;
         findRelevant(mDayPartsList);
         mDayPartsAdapter.updateList(mDayPartsList);
-        mDayParts.setVisibility(View.VISIBLE);
     }
 
     @Override
