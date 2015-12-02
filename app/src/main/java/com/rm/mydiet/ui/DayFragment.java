@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,8 +63,21 @@ public class DayFragment extends BaseFragment
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.d("DayFragment", "onViewCreated");
         mDayParts = (RecyclerView) findViewById(R.id.day_parts);
         mDayParts.setLayoutManager(new GridLayoutManager(getActivity(), 4));
+        mDayPartsAdapter = new DayPartsAdapter(mDayPartsList);
+        mDayParts.setAdapter(mDayPartsAdapter);
+        mDayPartsAdapter.setOnItemClickListener(new DayPartsAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int position) {
+                if (position >= 0 && position < 4) {
+                    mDayPartsAdapter.setItemSelected(position);
+                    showDayPartData(mDayPartsList.get(position), false);
+                }
+            }
+        });
+
         DatabaseManager.getInstance().retrieveDayParts(mCurrentStart, this);
     }
 
@@ -196,17 +210,8 @@ public class DayFragment extends BaseFragment
     public void onReceiveData(Collection<?> data) {
         mDayPartsList = (ArrayList<DayPart>) data;
         findRelevant(mDayPartsList);
-        mDayPartsAdapter = new DayPartsAdapter(mDayPartsList);
-        mDayPartsAdapter.setOnItemClickListener(new DayPartsAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View v, int position) {
-                if (position >= 0 && position < 4) {
-                    mDayPartsAdapter.setItemSelected(position);
-                    showDayPartData(mDayPartsList.get(position), false);
-                }
-            }
-        });
-        mDayParts.setAdapter(mDayPartsAdapter);
+        mDayPartsAdapter.updateList(mDayPartsList);
+        mDayParts.setVisibility(View.VISIBLE);
     }
 
     @Override

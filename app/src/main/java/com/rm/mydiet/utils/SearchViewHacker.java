@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.SearchView;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.lang.reflect.Field;
@@ -47,15 +48,13 @@ public class SearchViewHacker {
 
     public static void disableCloseButton(SearchView searchView){
         ImageView searchImageView = (ImageView) findView(searchView, "mCloseButton");
-        // searchImageView.setMaxWidth(0);
         searchImageView.setVisibility(View.GONE);
         searchImageView.setImageBitmap(null);
         searchImageView.setAdjustViewBounds(true);
     }
 
     public static void disablePlateBackGround(SearchView searchView) {
-        View plateView = getSearchPlate(searchView);
-
+        View plateView = findView(searchView, "mSearchPlate");
         plateView.setBackgroundColor(Color.TRANSPARENT);
     }
 
@@ -64,7 +63,9 @@ public class SearchViewHacker {
         hint.setBounds(0, 0, 0, 0);
     }
 
-    public static View getSearchPlate(SearchView searchView) {
-        return findView(searchView, "mSearchPlate");
+    public static void setHint(SearchView searchView, String hint) {
+        EditText editText = (EditText) findView(searchView, "mSearchSrcTextView");
+        editText.setHintTextColor(Color.parseColor("#26000000"));
+        editText.setHint(hint);
     }
 }

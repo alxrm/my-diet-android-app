@@ -69,8 +69,17 @@ public class DiaryFragment extends TimelineFragment
         mCurrentCalories = getArguments().getInt(DataTransferring.FRAGMENT_DIARY_KEY_CALORIES);
         mMaxCalories = Prefs.get().getInt(KEY_MAX_CALS, 2500);
 
+        mTimeLineAdapter = new ProductAdapter(mEatenProducts, true);
         mProductsList = (RecyclerView) findViewById(R.id.day_eaten_list);
         mProductsList.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mProductsList.setAdapter(mTimeLineAdapter);
+        mTimeLineAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int position) {
+                showProductInfo(mEatenProducts.get(position));
+            }
+        });
+
         mNoProductsMessage = (TextView) findViewById(R.id.day_eaten_text);
         mNoProductsMessage.setText(getEmptyMessageDayPart());
         boolean isEmpty = mEatenProducts.isEmpty();
@@ -83,24 +92,13 @@ public class DiaryFragment extends TimelineFragment
         mAddMore.setOnClickListener(this);
 
         setCaloriesProgress(mCurrentCalories, mMaxCalories);
-        switchProductsList(isEmpty);
         switchFooter(isEmpty);
+        switchProductsList(isEmpty);
     }
 
     private void switchProductsList(boolean isEmpty) {
         mProductsList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
         mNoProductsMessage.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-
-        if (!isEmpty) {
-            mTimeLineAdapter = new ProductAdapter(mEatenProducts, true);
-            mTimeLineAdapter.setOnItemClickListener(new ProductAdapter.OnItemClickListener() {
-                @Override
-                public void onItemClick(View v, int position) {
-                    showProductInfo(mEatenProducts.get(position));
-                }
-            });
-            mProductsList.setAdapter(mTimeLineAdapter);
-        }
     }
 
     @Override

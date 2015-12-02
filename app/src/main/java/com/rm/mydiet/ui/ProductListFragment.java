@@ -3,7 +3,6 @@ package com.rm.mydiet.ui;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.Product;
@@ -95,27 +93,11 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
 
         mSearchView = (SearchView) searchMenuItem.getActionView();
         mSearchView.setIconified(false);
-        mSearchView.setQueryHint("Search");
-
-        View searchPlate = SearchViewHacker.getSearchPlate(mSearchView);
-
-        int searchTextId = searchPlate
-                .getContext()
-                .getResources()
-                .getIdentifier("android:id/search_src_text", null, null);
-
-        TextView searchText = (TextView) searchPlate.findViewById(searchTextId);
-
-        if (searchText != null) {
-            searchText.setTextColor(Color.parseColor("#000000"));
-            searchText.setHintTextColor(Color.parseColor("#0c000000"));
-            searchText.setHint("Search");
-        }
-
 
         SearchViewHacker.disablePlateBackGround(mSearchView);
         SearchViewHacker.disableHintImage(mSearchView);
-//        SearchViewHacker.setCloseIcon(mSearchView, R.drawable.bar_clear_search);
+        SearchViewHacker.setHint(mSearchView, "Search");
+        SearchViewHacker.setCloseIcon(mSearchView, R.drawable.ic_search_clear);
 
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -131,7 +113,7 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
                     SearchViewHacker.disableCloseButton(mSearchView);
                     DatabaseManager.getInstance().retrieveProducts(ProductListFragment.this);
                 } else {
-//                    SearchViewHacker.setCloseIcon(mSearchView, R.drawable.bar_clear_search);
+                    SearchViewHacker.setCloseIcon(mSearchView, R.drawable.ic_search_clear);
                     DatabaseManager.getInstance().retrieveProducts(query, ProductListFragment.this);
                 }
                 return false;
@@ -163,7 +145,7 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
     @Override
     public void onReceiveData(Collection<?> data) {
         mProductList = (ArrayList<Product>) data;
-        mProductsAdapter.updateList(mProductList);
+        mProductsAdapter.updateList(mProductList, false);
         mProducts.setAdapter(mProductsAdapter);
     }
 

@@ -62,11 +62,16 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
         holder.mProductName.setText(currentProd.getName());
         holder.mProductCals.setText(currentProd.getCalories() + " ккал");
+        holder.mDivider.setVisibility(View.VISIBLE);
 
         Picasso.with(context())
                 .load(Api.getImageUrl(currentProd.getImg()))
                 .placeholder(R.drawable.photo)
                 .into(holder.mProductIcon);
+
+        if (position == getItemCount() - 1) {
+            holder.mDivider.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -77,8 +82,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
 
     @SuppressWarnings("unchecked")
-    public void updateList(Collection<?> dataSet) {
-        mProductList = (ArrayList<Product>) dataSet;
+    public void updateList(Collection<?> dataSet, boolean isEaten) {
+        if (isEaten)
+            mEatenList = (ArrayList<EatenProduct>) dataSet;
+        else
+            mProductList = (ArrayList<Product>) dataSet;
         notifyDataSetChanged();
     }
 
@@ -94,12 +102,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         private ImageView mProductIcon;
         private TextView mProductName;
         private TextView mProductCals;
+        private View mDivider;
 
         public ViewHolder(View itemView) {
             super(itemView);
             mProductIcon = (ImageView) itemView.findViewById(R.id.product_icon);
             mProductName = (TextView) itemView.findViewById(R.id.product_name);
             mProductCals = (TextView) itemView.findViewById(R.id.product_cals);
+            mDivider = itemView.findViewById(R.id.product_divider);
             itemView.setOnClickListener(this);
         }
 

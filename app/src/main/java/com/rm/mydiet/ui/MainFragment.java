@@ -6,6 +6,7 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,9 +84,6 @@ public class MainFragment extends BaseFragment {
 
     private class DayPagerAdapter extends FragmentPagerAdapter {
 
-        private static final int LENGTH = Integer.MAX_VALUE / 2;
-        private static final int MIDDLE = LENGTH / 2;
-
         public DayPagerAdapter(FragmentManager fm, long startingPoint) {
             super(fm);
             mStartingPoint = startingPoint;
@@ -93,8 +91,8 @@ public class MainFragment extends BaseFragment {
 
         @Override
         public Fragment getItem(int position) {
-//            Log.d("DayPagerAdapter", "pos: " + Math.abs(position - (mDayList.size() - 1)));
             long dayStart = mDayList.get(getFormattedPosition(position));
+            Log.d("DayPagerAdapter", "time " + TimeUtil.formatTimelineDate(dayStart));
             return DayFragment.newInstance(dayStart);
         }
 
@@ -102,23 +100,5 @@ public class MainFragment extends BaseFragment {
         public int getCount() {
             return mDayList.size() - 1;
         }
-
-//        @Override
-//        public void destroyItem(ViewGroup container, int position, Object object) {
-//            if (position < 2) {
-//                super.destroyItem(container, position, object);
-//            } else {
-//                super.destroyItem(container, LENGTH - position - 1, object);
-//            }
-//        }
-//
-//        @Override
-//        public Object instantiateItem(ViewGroup container, int position) {
-//            if (position < 2) {
-//                return super.instantiateItem(container, position);
-//            } else {
-//                return super.instantiateItem(container, LENGTH - position - 1);
-//            }
-//        }
     }
 }

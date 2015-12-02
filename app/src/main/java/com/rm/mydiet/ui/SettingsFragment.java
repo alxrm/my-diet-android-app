@@ -14,7 +14,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
-import com.rm.mydiet.utils.InputValidator;
+import com.rm.mydiet.utils.InputValidator.IntegerValidator;
 import com.rm.mydiet.utils.Prefs;
 import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
@@ -78,7 +78,7 @@ public class SettingsFragment extends BaseFragment
                         "Введите свой вес",
                         Prefs.get().getInt(KEY_WEIGHT, 62),
                         KEY_WEIGHT,
-                        new InputValidator() {
+                        new IntegerValidator() {
                             @Override
                             public boolean isValid(int data) {
                                 return data >= 30 && data <= 300;
@@ -95,7 +95,7 @@ public class SettingsFragment extends BaseFragment
                         "Введите свой рост",
                         Prefs.get().getInt(KEY_HEIGHT, 168),
                         KEY_HEIGHT,
-                        new InputValidator() {
+                        new IntegerValidator() {
                             @Override
                             public boolean isValid(int data) {
                                 return data >= 40 && data <= 250 ;
@@ -152,7 +152,7 @@ public class SettingsFragment extends BaseFragment
     private void makeInputDialog(String msg,
                                  int data,
                                  final String field,
-                                 final InputValidator validator) {
+                                 final IntegerValidator validator) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         mInputDialog = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_input, null);

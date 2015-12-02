@@ -25,6 +25,7 @@ import com.rm.mydiet.utils.TextWatcherAdapter;
 import com.rm.mydiet.utils.base.BaseFragment;
 
 import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_DIARY_EATEN_PRODUCT_CREATED;
+import static com.rm.mydiet.utils.StringUtils.formatFloat;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -218,13 +219,13 @@ public class ProductInfoFragment extends BaseFragment {
         int cals = mProduct.getCalories() * scalar;
         float full = proteins + carbs + fats;
 
-        mProteinsText.setText(String.format("%s г.", proteins));
+        mProteinsText.setText(String.format("%s г.", formatFloat(proteins)));
         mProteinsProgress.setProgress(getProgress(proteins, full));
         mProteinsBadge.setText("Белки");
-        mCarbsText.setText(String.format("%f г.", carbs));
+        mCarbsText.setText(String.format("%s г.", formatFloat(carbs)));
         mCarbsProgress.setProgress(getProgress(carbs, full));
         mCarbsBadge.setText("Углеводы");
-        mFatsText.setText(String.format("%s г.", fats));
+        mFatsText.setText(String.format("%s г.", formatFloat(fats)));
         mFatsProgress.setProgress(getProgress(fats, full));
         mFatsBadge.setText("Жиры");
         mCalsNum.setText(String.valueOf(cals));

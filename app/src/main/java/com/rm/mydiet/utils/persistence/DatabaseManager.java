@@ -14,6 +14,7 @@ import com.rm.mydiet.model.DBConfig;
 import com.rm.mydiet.model.DayPart;
 import com.rm.mydiet.model.EatenProduct;
 import com.rm.mydiet.model.Product;
+import com.rm.mydiet.utils.InputValidator.StringFilter;
 import com.rm.mydiet.utils.Prefs;
 import com.rm.mydiet.utils.background.WorkerThreadExecutor;
 
@@ -59,6 +60,13 @@ public class DatabaseManager extends SQLiteOpenHelper {
     private static ArrayList<Runnable> sCallbacks = new ArrayList<>();
     private static String sCurrentQueryHash = EMPTY_HASH;
     private static boolean sDatabaseUpdated = false;
+
+    private static StringFilter sDefaultQueryValidator = new StringFilter() {
+        @Override
+        public String filter(String data) {
+            return data.replace("\"", "");
+        }
+    };
 
     private DatabaseManager(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -168,6 +176,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     private Cursor getProductsCursor(String query) {
+        query = sDefaultQueryValidator.filter(query);
         SQLiteDatabase readableDatabase = getReadableDatabase();
         String selectQuery = SQLQueryBuilder.getInstance()
                 .select(ALL)

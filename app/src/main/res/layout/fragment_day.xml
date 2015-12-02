@@ -11,6 +11,7 @@
         android:layout_alignParentTop="true"
         android:background="#F5FAF2"
         android:overScrollMode="never"
+        android:visibility="gone"
         />
 
     <FrameLayout
