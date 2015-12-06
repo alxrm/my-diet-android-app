@@ -55,9 +55,10 @@ public class MainFragment extends BaseFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mCurrentDayText = (TextView) findViewById(R.id.day_current);
+        mStartingPoint = TimeUtil.getToday();
         mDayPager = (ViewPager) findViewById(R.id.pager_day);
         mDayPager.setOffscreenPageLimit(2);
-        mDayPager.setAdapter(new DayPagerAdapter(getFragmentManager(), TimeUtil.getToday()));
+        mDayPager.setAdapter(new DayPagerAdapter(getChildFragmentManager()));
         mDayPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -84,9 +85,9 @@ public class MainFragment extends BaseFragment {
 
     private class DayPagerAdapter extends FragmentPagerAdapter {
 
-        public DayPagerAdapter(FragmentManager fm, long startingPoint) {
+        public DayPagerAdapter(FragmentManager fm) {
             super(fm);
-            mStartingPoint = startingPoint;
+            Log.d("DayPagerAdapter", "DayPagerAdapter");
         }
 
         @Override
