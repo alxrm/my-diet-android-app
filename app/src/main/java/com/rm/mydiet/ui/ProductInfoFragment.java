@@ -11,6 +11,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -24,6 +26,11 @@ import com.rm.mydiet.model.Product;
 import com.rm.mydiet.utils.TextWatcherAdapter;
 import com.rm.mydiet.utils.base.BaseFragment;
 
+import static com.rm.mydiet.ui.DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART;
+import static com.rm.mydiet.ui.DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT;
+import static com.rm.mydiet.ui.DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT;
+import static com.rm.mydiet.ui.DataTransferring.PARENT_PRODUCT_INFO_DAY_PART;
+import static com.rm.mydiet.ui.DataTransferring.PARENT_PRODUCT_INFO_TIME;
 import static com.rm.mydiet.ui.OnFragmentInteractionListener.FRAGMENT_DIARY_EATEN_PRODUCT_CREATED;
 import static com.rm.mydiet.utils.StringUtils.formatFloat;
 
@@ -34,6 +41,7 @@ public class ProductInfoFragment extends BaseFragment {
 
     //region Vars and consts
     private static final int DEFAULT_COUNT = 1;
+    private static final int DEFAULT_SCALAR_ID = 0;
 
     private boolean mIsInteractive;
     private Bundle mParentData;
@@ -41,6 +49,8 @@ public class ProductInfoFragment extends BaseFragment {
     private EatenProduct mEaten;
     private Product mProduct;
     private int mCount;
+    private float mScalar;
+    private int mScalarId;
     private long mTime;
     private int mPart;
 
@@ -68,11 +78,9 @@ public class ProductInfoFragment extends BaseFragment {
     private Spinner mTypeSelector;
     //endregion
 
-    // TODO TIME, PART, PRODUCT !
-
     public static ProductInfoFragment newInstance(Product product) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT, product);
+        arguments.putParcelable(FRAGMENT_PRODUCT_INFO_KEY_PRODUCT, product);
         ProductInfoFragment fragment = new ProductInfoFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -80,8 +88,8 @@ public class ProductInfoFragment extends BaseFragment {
 
     public static ProductInfoFragment newInstance(EatenProduct eatenProduct, int dayPart) {
         Bundle arguments = new Bundle();
-        arguments.putParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT, eatenProduct);
-        arguments.putInt(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART, dayPart);
+        arguments.putParcelable(FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT, eatenProduct);
+        arguments.putInt(FRAGMENT_PRODUCT_INFO_KEY_DAY_PART, dayPart);
         ProductInfoFragment fragment = new ProductInfoFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -102,21 +110,27 @@ public class ProductInfoFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        mEaten = getArguments().getParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
+        mEaten = getArguments().getParcelable(FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
         if (mEaten != null) {
             setIsInteractive(true);
-            mPart = getArguments().getInt(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART);
+            mPart = getArguments().getInt(FRAGMENT_PRODUCT_INFO_KEY_DAY_PART);
             mProduct = mEaten.getProduct();
             mTime = mEaten.getTime();
             mCount = mEaten.getCount();
+            mScalarId = mEaten.getScalarId();
+            Log.d("ProductInfoFragment", "EATEN " + mEaten.getScalarId());
+            mScalar = EatenProduct.getScalars(mProduct).get(mScalarId);
         } else {
-            mProduct = getArguments().getParcelable(DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_PRODUCT);
+            mProduct = getArguments().getParcelable(FRAGMENT_PRODUCT_INFO_KEY_PRODUCT);
             mCount = DEFAULT_COUNT;
+            Log.d("ProductInfoFragment", "NOT EATEN");
+            mScalarId = DEFAULT_SCALAR_ID;
+            mScalar = EatenProduct.getScalars(mProduct).get(mScalarId);
             mParentData = mParent.getParentData();
             if (mParentData != null) {
                 setIsInteractive(true);
-                mTime = mParentData.getLong(DataTransferring.PARENT_PRODUCT_INFO_TIME);
-                mPart = mParentData.getInt(DataTransferring.PARENT_PRODUCT_INFO_DAY_PART);
+                mTime = mParentData.getLong(PARENT_PRODUCT_INFO_TIME);
+                mPart = mParentData.getInt(PARENT_PRODUCT_INFO_DAY_PART);
             } else {
                 setIsInteractive(false);
             }
@@ -158,8 +172,33 @@ public class ProductInfoFragment extends BaseFragment {
         mCountInput = (EditText) findViewById(R.id.prod_info_count_text);
         mProceedButton = (ImageView) findViewById(R.id.prod_info_add_btn);
 
-        initProductStats(mCount);
-        initAddProductBox();
+        setupScalarSelector();
+        setupProductStats();
+        setupAddProductBox();
+    }
+
+    private void setupScalarSelector() {
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                getActivity(),
+                android.R.layout.simple_dropdown_item_1line,
+                EatenProduct.getScalarNames(mProduct)
+        );
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mTypeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mScalarId = position;
+                mScalar = EatenProduct.getScalars(mProduct).get(mScalarId);
+                setupProductStats();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        mTypeSelector.setAdapter(spinnerAdapter);
+        mTypeSelector.setSelection(mScalarId, false);
     }
 
     @Override
@@ -173,14 +212,14 @@ public class ProductInfoFragment extends BaseFragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private void initAddProductBox() {
+    private void setupAddProductBox() {
         mCountInput.setText(String.valueOf(mCount));
         mCountInput.addTextChangedListener(new TextWatcherAdapter() {
             @Override
             public void afterTextChanged(Editable s) {
                 mCount = TextUtils.isEmpty(s.toString()) ?
                         DEFAULT_COUNT : Integer.parseInt(s.toString());
-                initProductStats(mCount);
+                setupProductStats();
             }
         });
 
@@ -207,16 +246,17 @@ public class ProductInfoFragment extends BaseFragment {
         if (mCount <= 0 || mProduct == null) return null;
         mEaten = mEaten == null ? new EatenProduct(mTime) : mEaten;
         mEaten.setCount(mCount);
+        mEaten.setScalarId(mScalarId);
         mEaten.setProduct(mProduct);
         return mEaten;
     }
 
-    private void initProductStats(int scalar) {
-        Log.d("ProductInfoFragment", "product info " + mProduct.getInfo());
-        float proteins = mProduct.getProteins() * scalar;
-        float carbs = mProduct.getCarbohydrates() * scalar;
-        float fats = mProduct.getFats() * scalar;
-        int cals = mProduct.getCalories() * scalar;
+    private void setupProductStats() {
+//        Log.d("ProductInfoFragment", "product info " + mProduct.getInfo());
+        float proteins = mProduct.getProteins() * mCount * mScalar;
+        float carbs = mProduct.getCarbohydrates() * mCount * mScalar;
+        float fats = mProduct.getFats() * mCount * mScalar;
+        float cals = mProduct.getCalories() * mCount * mScalar;
         float full = proteins + carbs + fats;
 
         mProteinsText.setText(String.format("%s г.", formatFloat(proteins)));
@@ -228,7 +268,7 @@ public class ProductInfoFragment extends BaseFragment {
         mFatsText.setText(String.format("%s г.", formatFloat(fats)));
         mFatsProgress.setProgress(getProgress(fats, full));
         mFatsBadge.setText("Жиры");
-        mCalsNum.setText(String.valueOf(cals));
+        mCalsNum.setText(formatFloat(cals));
     }
 
     private int getProgress(float value, float full) {

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static com.rm.mydiet.MyDietApplication.context;
+import static com.rm.mydiet.utils.StringUtils.formatFloat;
 
 /**
  * Created by alex
@@ -61,7 +62,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
                 mProductList.get(position) : mEatenList.get(position).getProduct();
 
         holder.mProductName.setText(currentProd.getName());
-        holder.mProductCals.setText(currentProd.getCalories() + " ккал");
+        holder.mProductCals.setText(formatFloat(currentProd.getCalories(), 0) + " ккал");
         holder.mDivider.setVisibility(View.VISIBLE);
 
         Picasso.with(context())
@@ -91,7 +92,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
-
         mListener = listener;
     }
 
@@ -121,7 +121,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         }
 
         public void setOnItemClickListener(OnItemClickListener listener) {
-
             mClickListener = listener;
         }
     }

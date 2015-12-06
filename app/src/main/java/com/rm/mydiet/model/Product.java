@@ -7,6 +7,7 @@ import android.os.Parcelable;
  * Created by alex
  */
 public class Product implements Parcelable {
+
     private String name;
     private String info;
     private String id;
@@ -121,4 +122,5 @@ public class Product implements Parcelable {
         dest.writeFloat(carbohydrates);
         dest.writeInt(calories);
     }
+
 }

@@ -14,13 +14,14 @@ public class StringUtils {
             new DecimalFormatSymbols();
     private static final DecimalFormat sDecimalFormat =
             new DecimalFormat();
+    private static final String DEFAULT_PATTERN = "#,###.#";
 
     static {
         sDecimalSymbols.setDecimalSeparator('.');
         sDecimalSymbols.setGroupingSeparator(',');
 
         sDecimalFormat.setGroupingSize(3);
-        sDecimalFormat.applyPattern("#,###.#");
+        sDecimalFormat.applyPattern(DEFAULT_PATTERN);
         sDecimalFormat.setDecimalFormatSymbols(sDecimalSymbols);
     }
 
@@ -45,6 +46,20 @@ public class StringUtils {
     }
 
     public static String formatFloat(float f) {
+        sDecimalFormat.applyPattern(DEFAULT_PATTERN);
+        return sDecimalFormat.format(f);
+    }
+
+    public static String formatFloat(float f, int toFixed) {
+        if (toFixed > 10 || toFixed < 0) return formatFloat(f);
+
+        String pattern = "#,###";
+        if (toFixed > 0) {
+            pattern += ".";
+            for (int i = 0; i < toFixed; i++) pattern += "#";
+        }
+
+        sDecimalFormat.applyPattern(pattern);
         return sDecimalFormat.format(f);
     }
 }

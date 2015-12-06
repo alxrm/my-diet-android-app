@@ -43,6 +43,7 @@ import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_PART_ID;
 import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_PRODUCTS;
 import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_COUNT;
 import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_ID;
+import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_SCALAR_ID;
 import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_TIME;
 import static com.rm.mydiet.utils.persistence.TimelineTable.TIMELINE_TABLE;
 
@@ -295,6 +296,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 eatenData = items.getJSONObject(i);
                 eatenProduct = new EatenProduct(eatenData.getLong(JSON_TIME));
                 eatenProduct.setCount(eatenData.getInt(JSON_COUNT));
+                eatenProduct.setScalarId(eatenData.getInt(JSON_SCALAR_ID));
                 eatenProduct.setProduct(getProductById(eatenData.getString(JSON_ID)));
                 result.add(eatenProduct);
             }
@@ -323,6 +325,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                     product = new JSONObject();
                     product.put(JSON_TIME, prod.getTime());
                     product.put(JSON_COUNT, prod.getCount());
+                    product.put(JSON_SCALAR_ID, prod.getScalarId());
                     product.put(JSON_ID, prod.getProduct().getId());
                     all.put(product);
                 }

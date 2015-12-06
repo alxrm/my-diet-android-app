@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.DayPart;
 import com.rm.mydiet.model.EatenProduct;
+import com.rm.mydiet.model.Product;
 import com.rm.mydiet.ui.adapter.DayPartsAdapter;
 import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
@@ -22,6 +23,8 @@ import com.rm.mydiet.utils.persistence.DatabaseManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static com.rm.mydiet.model.EatenProduct.getScalars;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -160,7 +163,10 @@ public class DayFragment extends BaseFragment
         int cals = 0;
         for (DayPart dayPart : dayPartsList) {
             for (EatenProduct eaten : dayPart.getEatenProducts()) {
-                cals += eaten.getCount() * eaten.getProduct().getCalories();
+                Product product = eaten.getProduct();
+                cals += eaten.getCount()
+                        * product.getCalories()
+                        * getScalars(product).get(eaten.getScalarId());
             }
         }
         return cals;
