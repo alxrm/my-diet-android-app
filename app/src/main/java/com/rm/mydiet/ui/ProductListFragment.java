@@ -161,9 +161,9 @@ public class ProductListFragment extends BaseFragment implements DatabaseListene
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mProductList = null;
+    public void onStop() {
+        super.onStop();
+        KeyBoardUtil.hide(mSearchView, getActivity());
     }
 
     @Override

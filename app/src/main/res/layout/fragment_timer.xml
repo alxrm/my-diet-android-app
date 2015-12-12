@@ -43,8 +43,8 @@
             android:id="@+id/day_timer_badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_above="@id/day_timer_countdown"
+            android:layout_centerHorizontal="true"
             android:background="@drawable/badge_background"
             android:textColor="@android:color/black"
             android:paddingStart="16dp"
@@ -56,13 +56,12 @@
             android:id="@+id/day_timer_advice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_below="@id/day_timer_countdown"
+            android:layout_centerHorizontal="true"
             android:gravity="center"
             android:textColor="@android:color/black"
             android:text="@string/timer_advice_text"
             android:padding="8dp"/>
 
     </RelativeLayout>
-
 </RelativeLayout>

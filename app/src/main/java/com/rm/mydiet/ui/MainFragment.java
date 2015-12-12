@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
+import com.rm.mydiet.utils.KeyBoardUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class MainFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        KeyBoardUtil.hide(getActivity());
         for (int i = 0; i < 10; i++) {
             mDayList.add(getStartOfTheDay(getToday() - (DAY_MILLIES * i)));
         }

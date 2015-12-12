@@ -1,112 +1,117 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.rm.mydiet.ui.ProductInfoFragment">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context="com.rm.mydiet.ui.ProductInfoFragment">
 
     <RelativeLayout
-        android:id="@+id/prod_info_name_box"
         android:layout_width="match_parent"
-        android:layout_height="166dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:paddingStart="18dp"
-        android:paddingEnd="18dp"
-        android:background="@color/colorPrimaryLight">
+        android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/prod_info_name"
+        <RelativeLayout
+            android:id="@+id/prod_info_name_box"
             android:layout_width="match_parent"
+            android:layout_height="166dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:background="@color/colorPrimaryLight">
+
+            <TextView
+                android:id="@+id/prod_info_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="3"
+                android:ellipsize="end"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:text="Actvivia-huivia"
+                />
+
+            <include
+                android:id="@+id/prod_info_add_box"
+                layout="@layout/box_add_product"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_below="@id/prod_info_name"
+                android:layout_centerHorizontal="true"
+                />
+
+        </RelativeLayout>
+
+        <include
+            android:id="@+id/prod_info_carbs_box"
+            layout="@layout/box_stats_product"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:lines="3"
-            android:ellipsize="end"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:textColor="@android:color/black"
-            android:text="Actvivia-huivia"
+            android:layout_below="@id/prod_info_name_box"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="28dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             />
 
         <include
-            android:id="@+id/prod_info_add_box"
-            layout="@layout/box_add_product"
+            android:id="@+id/prod_info_proteins_box"
+            layout="@layout/box_stats_product"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_below="@id/prod_info_name"
-            android:layout_centerHorizontal="true"
+            android:layout_below="@id/prod_info_name_box"
+            android:layout_toStartOf="@id/prod_info_carbs_box"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="28dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             />
-        
+
+        <include
+            android:id="@+id/prod_info_fats_box"
+            layout="@layout/box_stats_product"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/prod_info_name_box"
+            android:layout_toEndOf="@id/prod_info_carbs_box"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="28dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            />
+
+        <TextView
+            android:id="@+id/prod_info_cals_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/prod_info_fats_box"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textColor="@android:color/black"
+            android:text="Calories:"/>
+
+        <TextView
+            android:id="@+id/prod_info_cals_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/prod_info_cals_title"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="16dp"
+            android:textStyle="bold"
+            android:textSize="21sp"
+            android:textColor="@android:color/black"
+            android:text="152"/>
+
+        <TextView
+            android:id="@+id/prod_info_cals_val"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/prod_info_cals_num"
+            android:layout_alignBottom="@id/prod_info_cals_num"
+            android:layout_marginStart="4dp"
+            android:textSize="18sp"
+            android:text="ккал"/>
+
     </RelativeLayout>
-
-    <include
-        android:id="@+id/prod_info_carbs_box"
-        layout="@layout/box_stats_product"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prod_info_name_box"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="28dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        />
-
-    <include
-        android:id="@+id/prod_info_proteins_box"
-        layout="@layout/box_stats_product"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prod_info_name_box"
-        android:layout_toStartOf="@id/prod_info_carbs_box"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="28dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        />
-
-    <include
-        android:id="@+id/prod_info_fats_box"
-        layout="@layout/box_stats_product"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prod_info_name_box"
-        android:layout_toEndOf="@id/prod_info_carbs_box"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="28dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        />
-
-    <TextView
-        android:id="@+id/prod_info_cals_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prod_info_fats_box"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:textColor="@android:color/black"
-        android:text="Calories:"/>
-
-    <TextView
-        android:id="@+id/prod_info_cals_num"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/prod_info_cals_title"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="16dp"
-        android:textStyle="bold"
-        android:textSize="21sp"
-        android:textColor="@android:color/black"
-        android:text="152"/>
-
-    <TextView
-        android:id="@+id/prod_info_cals_val"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/prod_info_cals_num"
-        android:layout_alignBottom="@id/prod_info_cals_num"
-        android:layout_marginStart="4dp"
-        android:textSize="18sp"
-        android:text="ккал"/>
-
-</RelativeLayout>
+</ScrollView>
