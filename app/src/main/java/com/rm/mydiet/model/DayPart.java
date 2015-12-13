@@ -38,6 +38,13 @@ public class DayPart implements Parcelable {
         return new DayPart(partId, false, day);
     }
 
+    public static ArrayList<DayPart> getEmptyDayPartsForDay(long day) {
+        ArrayList<DayPart> dayParts = new ArrayList<>(4);
+        for (int i = 0; i < 4; i++)
+            dayParts.add(DayPart.empty(i, day));
+        return dayParts;
+    }
+
     private DayPart(int partId, boolean exists, long day) {
         this.mPartId = partId;
         this.mExists = exists;

@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import static com.rm.mydiet.MyDietApplication.context;
+import static com.rm.mydiet.model.DayPart.getEmptyDayPartsForDay;
 import static com.rm.mydiet.utils.StringUtils.md5;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CALORIES;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CARBOHYDRATES;
@@ -305,13 +306,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
             e.printStackTrace();
             return result;
         }
-    }
-
-    private ArrayList<DayPart> getEmptyDayPartsForDay(long day) {
-        ArrayList<DayPart> dayParts = new ArrayList<>(4);
-        for (int i = 0; i < 4; i++)
-            dayParts.add(DayPart.empty(i, day));
-        return dayParts;
     }
 
     private String getJsonFromProducts(ArrayList<EatenProduct> products) {

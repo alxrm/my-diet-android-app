@@ -136,6 +136,10 @@ public class TimeUtil {
         return (getToday()/1000) == (getStartOfTheDay(dayInMillis)/1000);
     }
 
+    public static boolean compareMillis(long lMillis, long rMillis) {
+        return (lMillis/1000) == (rMillis/1000);
+    }
+
     public static int calculateTimerProgress(long start, long globalFinish, long left) {
         long localFinish = globalFinish - start;
         long past = localFinish - left;

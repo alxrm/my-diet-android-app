@@ -3,6 +3,7 @@ package com.rm.mydiet.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import com.rm.mydiet.R;
 import com.rm.mydiet.utils.base.BaseActivity;
@@ -29,6 +30,7 @@ public class AddProductActivity extends BaseActivity implements OnFragmentIntera
 
     @Override
     protected void onToolbarCreated() {
+        getToolbar().findViewById(R.id.day_cals_left).setVisibility(View.GONE);
         setTitle("");
         setSupportActionBar(getToolbar());
     }

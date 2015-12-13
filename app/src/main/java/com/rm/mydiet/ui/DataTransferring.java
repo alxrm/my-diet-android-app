@@ -21,6 +21,9 @@ public interface DataTransferring {
 
     // day fragment
     String FRAGMENT_DAY_KEY_START = "day_day";
+    String CALLBACK_DAY_WRAPPER = "day_callback_wrapper";
+    String CALLBACK_DAY_KEY_DAY = "day_callback_day";
+    String CALLBACK_DAY_KEY_CALORIES_PROGRESS = "day_callback_calories";
 
     // diary fragment
     String FRAGMENT_DIARY_KEY_DAY_PART = "diary_day_part";

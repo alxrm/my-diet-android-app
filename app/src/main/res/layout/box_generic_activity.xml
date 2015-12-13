@@ -25,20 +25,14 @@
             android:theme="@style/AppTheme.AppBarOverlay"
             app:popupTheme="@style/AppTheme.PopupOverlay">
 
-            <!--<RelativeLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:layout_marginEnd="56dp">-->
-
-                <!--<ProgressBar-->
-                    <!--android:id="@+id/day_cals_left"-->
-                    <!--style="?android:progressBarStyleHorizontal"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_centerInParent="true"-->
-                    <!--android:progress="40"/>-->
-
-            <!--</RelativeLayout>-->
+            <ProgressBar
+                android:id="@+id/day_cals_left"
+                style="?android:progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_marginEnd="56dp"
+                android:progress="0"/>
 
             </android.support.v7.widget.Toolbar>
 
