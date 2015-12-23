@@ -23,14 +23,11 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
+
         MainFragment fragment = new MainFragment();
         switchFragment(fragment, null);
-        inflateData();
-    }
 
-    private void inflateData() {
-        DatabaseManager mgr = DatabaseManager.getInstance();
-        mgr.update();
+        DatabaseManager.getInstance().update();
     }
 
     @Override

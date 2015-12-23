@@ -57,31 +57,28 @@ public class SQLQueryBuilder {
     public static final String DEFAULT = " DEFAULT ";
     //endregion
 
-    private static final ThreadLocal<StringBuilder> sBuilder = new ThreadLocal<>();
-    private static final ThreadLocal<SQLQueryBuilder> sInstance = new ThreadLocal<>();
+    private volatile StringBuilder mBuilder = null;
 
-    private SQLQueryBuilder() {}
-
-    public static SQLQueryBuilder getInstance() {
-        if (sInstance.get() == null) {
-            sInstance.set(new SQLQueryBuilder());
-        }
-        sBuilder.set(new StringBuilder());
-        return sInstance.get();
+    private SQLQueryBuilder() {
+        mBuilder = new StringBuilder();
     }
 
-    private static void removeLastComa() {
-        sBuilder.get().deleteCharAt(sBuilder.get().length() - 2);
+    public static SQLQueryBuilder newInstance() {
+        return new SQLQueryBuilder();
+    }
+
+    private void removeLastComa() {
+        mBuilder.deleteCharAt(mBuilder.length() - 2);
     }
 
     //region Create table
     public SQLQueryBuilder create(String tableName) {
-        sBuilder.get().append(CREATE).append(TABLE).append(tableName);
+        mBuilder.append(CREATE).append(TABLE).append(tableName);
         return this;
     }
 
     public SQLQueryBuilder columnsStart() {
-        sBuilder.get().append(START_PARAMS);
+        mBuilder.append(START_PARAMS);
         return this;
     }
 
@@ -89,23 +86,23 @@ public class SQLQueryBuilder {
      * @param columnParams { TYPE, NULL/NOT NULL, PRIMARY_KEY }
      */
     public SQLQueryBuilder column(@NonNull String name, String[] columnParams) {
-        sBuilder.get().append(name);
+        mBuilder.append(name);
         if (columnParams != null)
-            for (String param : columnParams) sBuilder.get().append(param);
-        sBuilder.get().append(COMA);
+            for (String param : columnParams) mBuilder.append(param);
+        mBuilder.append(COMA);
         return this;
     }
 
     public SQLQueryBuilder columnsEnd() {
         removeLastComa();
-        sBuilder.get().append(END_PARAMS);
+        mBuilder.append(END_PARAMS);
         return this;
     }
     //endregion
 
     //region Select
     public SQLQueryBuilder select(String criteria) {
-        sBuilder.get().append(SELECT).append(criteria == null ? ALL : criteria);
+        mBuilder.append(SELECT).append(criteria == null ? ALL : criteria);
         return this;
     }
 
@@ -113,35 +110,35 @@ public class SQLQueryBuilder {
      * <Table, Column>
      */
     public SQLQueryBuilder select(ArrayList<Pair<String, String>> tableColumn) {
-        sBuilder.get().append(SELECT);
+        mBuilder.append(SELECT);
         if (tableColumn != null && !tableColumn.isEmpty()) {
             for (Pair<String, String> tabCol : tableColumn) {
-                sBuilder.get().append(tabCol.first)
+                mBuilder.append(tabCol.first)
                         .append(".")
                         .append(tabCol.second)
                         .append(COMA);
             }
             removeLastComa();
         } else {
-            sBuilder.get().append(ALL);
+            mBuilder.append(ALL);
         }
         return this;
     }
 
     public SQLQueryBuilder from(@NonNull String table) {
-        sBuilder.get().append(FROM).append(table);
+        mBuilder.append(FROM).append(table);
         return this;
     }
 
     public SQLQueryBuilder where() {
-        sBuilder.get().append(WHERE);
+        mBuilder.append(WHERE);
         return this;
     }
 
     public SQLQueryBuilder integerClause(@NonNull String column,
                                          @NonNull String operators,
-                                         long operand) {
-        sBuilder.get().append(column)
+                                         @NonNull String operand) {
+        mBuilder.append(column)
                 .append(operators)
                 .append(operand);
         return this;
@@ -150,7 +147,7 @@ public class SQLQueryBuilder {
     public SQLQueryBuilder stringClause(@NonNull String column,
                                         @NonNull String operators,
                                         @NonNull String operand) {
-        sBuilder.get().append(column)
+        mBuilder.append(column)
                 .append(operators)
                 .append(STRING_START)
                 .append(operand)
@@ -159,12 +156,12 @@ public class SQLQueryBuilder {
     }
 
     public SQLQueryBuilder and() {
-        sBuilder.get().append(AND);
+        mBuilder.append(AND);
         return this;
     }
 
     public SQLQueryBuilder or() {
-        sBuilder.get().append(OR);
+        mBuilder.append(OR);
         return this;
     }
 
@@ -172,8 +169,8 @@ public class SQLQueryBuilder {
         if (columns.length == 0)
             throw new IllegalArgumentException("Must be at least one column");
 
-        sBuilder.get().append(ORDER_BY);
-        for (String col : columns) sBuilder.get().append(col).append(COMA);
+        mBuilder.append(ORDER_BY);
+        for (String col : columns) mBuilder.append(col).append(COMA);
         removeLastComa();
         return this;
     }
@@ -187,29 +184,31 @@ public class SQLQueryBuilder {
      * ON Orders.CustomerID=Customers.CustomerID;
      */
     public SQLQueryBuilder join(@NonNull String tableName) {
-        sBuilder.get().append(INNER_JOIN).append(tableName);
+        mBuilder.append(INNER_JOIN).append(tableName);
         return this;
     }
 
     public SQLQueryBuilder on(@NonNull String lCol,
-                              @NonNull String operator,
-                              @NonNull String rCol) {
-        sBuilder.get().append(ON).append(lCol).append(operator).append(rCol);
+                                           @NonNull String operator,
+                                           @NonNull String rCol) {
+        mBuilder.append(ON).append(lCol).append(operator).append(rCol);
         return this;
     }
     //endregion
 
     public SQLQueryBuilder drop(String tableName) {
-        sBuilder.get().append(DROP).append(TABLE).append(tableName);
+        mBuilder.append(DROP).append(TABLE).append(tableName);
         return this;
     }
 
     public SQLQueryBuilder delete(String tableName) {
-        sBuilder.get().append(DELETE).append(FROM).append(tableName);
+        mBuilder.append(DELETE).append(FROM).append(tableName);
         return this;
     }
 
     public String build() {
-        return sBuilder.get().toString().trim().replace(" +", SPACE);
+        String result = mBuilder.toString().trim().replace(" +", SPACE);
+        mBuilder = new StringBuilder();
+        return result;
     }
 }

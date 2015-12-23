@@ -35,7 +35,7 @@ public class TimerFragment extends TimelineFragment {
     private TextView mTimerCdText;
     private DayPart mCurrentDayPart;
     private long mTimerOffset;
-    private long mDayStart;
+    private long mDayStart; // MILLIS
 
     private RelativeLayout mSkipTimerButton;
 
@@ -70,7 +70,7 @@ public class TimerFragment extends TimelineFragment {
         mCurrentDayPart = (DayPart) getArguments().getParcelable(DataTransferring.FRAGMENT_TIMER_KEY_DAY_PART);
         mCurrentCalories = getArguments().getInt(DataTransferring.FRAGMENT_TIMER_KEY_CALORIES);
         mMaxCalories = Prefs.get().getInt(KEY_MAX_CALS, 2500);
-        mDayStart = mCurrentDayPart.getDay();
+        mDayStart = mCurrentDayPart.getDay(); // MILLIS
         mTimerOffset = mCurrentDayPart.getTimerOffset();
 
         mTimerProgress = (ProgressBar) findViewById(R.id.day_timer_progress);
@@ -91,7 +91,7 @@ public class TimerFragment extends TimelineFragment {
     }
 
     private void initTimerProgress() {
-        long future = (mTimerOffset + mDayStart) - TimeUtil.unixTime();
+        long future = (mTimerOffset + mDayStart) - TimeUtil.unixTimeMillis();
         mTimerBadge.setText(getBadgeMessage());
 //        mTimerAdvice.setText("");
 

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.volley.Response;
@@ -15,18 +14,25 @@ import com.rm.mydiet.model.DBConfig;
 import com.rm.mydiet.model.DayPart;
 import com.rm.mydiet.model.EatenProduct;
 import com.rm.mydiet.model.Product;
-import com.rm.mydiet.utils.InputValidator.StringFilter;
 import com.rm.mydiet.utils.Prefs;
-import com.rm.mydiet.utils.background.WorkerThreadExecutor;
+import com.rm.mydiet.utils.StringUtils;
+import com.rm.mydiet.utils.StringUtils.InputValidator.StringFilter;
+import com.rm.mydiet.utils.TimeUtil;
+import com.rm.mydiet.utils.background.DispatchQueue;
+import com.rm.mydiet.utils.background.SharedDataHolder;
+import com.rm.mydiet.utils.persistence.fetcher.Fetcher;
+import com.rm.mydiet.utils.persistence.fetcher.ProductFetcher;
+import com.rm.mydiet.utils.persistence.fetcher.TimelineFetcher;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static com.rm.mydiet.MyDietApplication.context;
-import static com.rm.mydiet.model.DayPart.getEmptyDayPartsForDay;
 import static com.rm.mydiet.utils.StringUtils.md5;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CALORIES;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_CARBOHYDRATES;
@@ -38,12 +44,11 @@ import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_NAME;
 import static com.rm.mydiet.utils.persistence.ProductsTable.COLUMN_PROTEINS;
 import static com.rm.mydiet.utils.persistence.ProductsTable.PRODUCTS_TABLE;
 import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.ALL;
-import static com.rm.mydiet.utils.persistence.SQLQueryBuilder.LIKE;
 import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_DAY_START;
 import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_PART_ID;
 import static com.rm.mydiet.utils.persistence.TimelineTable.COLUMN_PRODUCTS;
 import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_COUNT;
-import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_ID;
+import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_PRODUCT_ID;
 import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_SCALAR_ID;
 import static com.rm.mydiet.utils.persistence.TimelineTable.JSON_TIME;
 import static com.rm.mydiet.utils.persistence.TimelineTable.TIMELINE_TABLE;
@@ -51,18 +56,20 @@ import static com.rm.mydiet.utils.persistence.TimelineTable.TIMELINE_TABLE;
 /**
  * Created by alex
  */
+@SuppressWarnings("ALL")
 public class DatabaseManager extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "diet.db";
     private static final int DB_VERSION = 1;
-    private static final String EMPTY_HASH = md5("");
 
+    private static final String KEY_NEW_DATA = md5("fillData");
+
+    private static DispatchQueue sFetcherQueue = new DispatchQueue("fetcher");
+    private static DispatchQueue sDatabaseQueue = new DispatchQueue("database");
     private static DatabaseManager sInstance;
-    private static DBConfig sOldConfig;
-    private static DBConfig sNewConfig;
-    private static ArrayList<Runnable> sCallbacks = new ArrayList<>();
-    private static String sCurrentQueryHash = EMPTY_HASH;
-    private static boolean sDatabaseUpdated = false;
+
+    private Queue<Fetcher> mFetchers;
+    private static boolean sUnLocked = false;
 
     private static StringFilter sDefaultQueryValidator = new StringFilter() {
         @Override
@@ -71,8 +78,13 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
     };
 
+    private DBConfig mNewConfig;
+    private SharedDataHolder mDataHolder;
+
     private DatabaseManager(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
+        this.mDataHolder = SharedDataHolder.getInstance();
+        this.mFetchers = new LinkedList<>();
     }
 
     public static DatabaseManager getInstance() {
@@ -82,232 +94,65 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return sInstance;
     }
 
-    private static synchronized void handleLoadComplete() {
-        sDatabaseUpdated = true;
-        for (Runnable callback : sCallbacks) callback.run();
-        sCallbacks = new ArrayList<>();
+    public void retrieveDayParts(long day, DatabaseListener listener) {
+        TimelineFetcher timelineFetcher = new TimelineFetcher(sFetcherQueue, getReadableDatabase());
+        String dayQuery = String.valueOf(TimeUtil.toSeconds(day));
+        Log.d("DatabaseManager", "dayQuery KEY: " + dayQuery);
+
+        timelineFetcher.setQuery(dayQuery);
+        timelineFetcher.setDatabaseListener(listener);
+
+        if (isFetchersLocked()) timelineFetcher.fetch();
+        else mFetchers.add(timelineFetcher);
     }
 
-    public void retrieveDayParts(final long day, final DatabaseListener listener) {
-        Runnable loadTimelineTask = new Runnable() {
-            @Override
-            public void run() {
-                executeLoadDayParts(day, listener);
-            }
-        };
+    public void retrieveProducts(String query, DatabaseListener listener) {
+        ProductFetcher productFetcher = new ProductFetcher(sFetcherQueue, getReadableDatabase());
+        String filtered = sDefaultQueryValidator.filter(StringUtils.nullAsEmpty(query));
 
-        if (sDatabaseUpdated) loadTimelineTask.run();
-        else sCallbacks.add(loadTimelineTask);
+        productFetcher.setQuery(filtered);
+        productFetcher.setDatabaseListener(listener);
+
+        if (isFetchersLocked()) productFetcher.fetch();
+        else mFetchers.add(productFetcher);
     }
 
-    public void retrieveProducts(final String query, final DatabaseListener listener) {
-        Runnable loadProductsTask = new Runnable() {
-            @Override
-            public void run() {
-                sCurrentQueryHash = TextUtils.isEmpty(query) ? EMPTY_HASH : md5(query);
-                executeLoadProducts(query, sCurrentQueryHash, listener);
-            }
-        };
+    private boolean isFetchersLocked() {
+        return sUnLocked;
+    }
 
-        if (sDatabaseUpdated) loadProductsTask.run();
-        else sCallbacks.add(loadProductsTask);
+    private void unlockFetchers() {
+        Log.d("DatabaseManager", "unlockFetchers");
+        while (!mFetchers.isEmpty()) mFetchers.remove().fetch();
+        this.sUnLocked = true;
     }
 
     public void addDayPart(DayPart dayPart) {
+        // todo make it fast!
         ContentValues values = new ContentValues();
         SQLiteDatabase writableDatabase = getWritableDatabase();
-        values.put(COLUMN_DAY_START, String.valueOf(dayPart.getDay() / 1000));
+        values.put(COLUMN_DAY_START, String.valueOf(TimeUtil.toSeconds(dayPart.getDay())));
         values.put(COLUMN_PART_ID, dayPart.getPartId());
         values.put(COLUMN_PRODUCTS, getJsonFromProducts(dayPart.getEatenProducts()));
-        writableDatabase.insert(TIMELINE_TABLE, null, values);
+        long t = writableDatabase.insert(TIMELINE_TABLE, null, values);
+        Log.d("DatabaseManager", "ADDED daypart index: " + t);
     }
 
+
     public void updateDayPart(DayPart dayPart) {
+        // todo make it fast!
         ContentValues values = new ContentValues();
         SQLiteDatabase writableDatabase = getWritableDatabase();
         String clause = COLUMN_DAY_START + "=?" + " AND " + COLUMN_PART_ID + "=?";
         String[] dayPartArgs = new String[2];
-        dayPartArgs[0] = String.valueOf(dayPart.getDay() / 1000);
+        dayPartArgs[0] = String.valueOf(TimeUtil.toSeconds(dayPart.getDay()));
         dayPartArgs[1] = String.valueOf(dayPart.getPartId());
         values.put(COLUMN_PRODUCTS, getJsonFromProducts(dayPart.getEatenProducts()));
-        writableDatabase.update(TIMELINE_TABLE, values, clause, dayPartArgs);
+        long t = writableDatabase.update(TIMELINE_TABLE, values, clause, dayPartArgs);
+        Log.d("DatabaseManager", "UPDATED daypart index:  " + t);
     }
 
-    private void executeLoadProducts(final String query,
-                                     final String hash,
-                                     final DatabaseListener listener) {
-        final ArrayList<Product> products = new ArrayList<>();
-        Runnable fetchTask = new Runnable() {
-            @Override
-            public void run() {
-                Cursor productsCursor = TextUtils.isEmpty(query) ?
-                        getProductsCursor() : getProductsCursor(query);
-                products.addAll(fetchProducts(productsCursor));
-            }
-        };
-        Runnable onReceive = new Runnable() {
-            @Override
-            public void run() {
-                if (hash.equals(sCurrentQueryHash)) {
-                    listener.onReceiveData(products);
-                }
-            }
-        };
-        WorkerThreadExecutor.start()
-                .task(fetchTask)
-                .callback(onReceive)
-                .execute();
-    }
-
-    private void executeLoadDayParts(final long day,
-                                     final DatabaseListener listener) {
-        final ArrayList<DayPart> dayParts = new ArrayList<>();
-        Runnable fetchTask = new Runnable() {
-            @Override
-            public void run() {
-                Cursor dayPartsCursor = getDayPartsCursor(day / 1000);
-                dayParts.addAll(fetchDayParts(dayPartsCursor, day));
-            }
-        };
-        Runnable onReceive = new Runnable() {
-            @Override
-            public void run() {
-                listener.onReceiveData(dayParts);
-            }
-        };
-        WorkerThreadExecutor.start()
-                .task(fetchTask)
-                .callback(onReceive)
-                .execute();
-    }
-
-    private Cursor getDayPartsCursor(long start) {
-        SQLiteDatabase readableDatabase = getReadableDatabase();
-        String selectQuery = SQLQueryBuilder.getInstance()
-                .select(ALL)
-                .from(TIMELINE_TABLE)
-                .where()
-                .integerClause(COLUMN_DAY_START, LIKE, start)
-                .orderBy(new String[] { COLUMN_PART_ID })
-                .build();
-        Cursor data = readableDatabase.rawQuery(selectQuery, null);
-        data.moveToFirst();
-        return data;
-    }
-
-    private Cursor getProductsCursor() {
-        SQLiteDatabase readableDatabase = getReadableDatabase();
-        String selectQuery = SQLQueryBuilder.getInstance()
-                .select(ALL)
-                .from(PRODUCTS_TABLE)
-                .orderBy(new String[]{ COLUMN_NAME, COLUMN_CALORIES })
-                .build();
-        Cursor data = readableDatabase.rawQuery(selectQuery, null);
-        data.moveToFirst();
-        return data;
-    }
-
-    private Cursor getProductsCursor(String query) {
-        query = sDefaultQueryValidator.filter(query);
-        SQLiteDatabase readableDatabase = getReadableDatabase();
-        String selectQuery = SQLQueryBuilder.getInstance()
-                .select(ALL)
-                .from(PRODUCTS_TABLE)
-                .where()
-                .stringClause(COLUMN_NAME, LIKE, query)
-                .orderBy(new String[]{COLUMN_NAME, COLUMN_CALORIES })
-                .build();
-        Cursor data = readableDatabase.rawQuery(selectQuery, null);
-        data.moveToFirst();
-        return data;
-    }
-
-    private ArrayList<DayPart> fetchDayParts(final Cursor data,
-                                             final long day) {
-        final ArrayList<DayPart> dayPartsTmp = getEmptyDayPartsForDay(day);
-        if (data.getCount() > 0) {
-            do {
-                final DayPart dayPart = getDayPart(data, day);
-                dayPartsTmp.set(dayPart.getPartId(), dayPart);
-            } while (data.moveToNext());
-        }
-        return dayPartsTmp;
-    }
-
-    private ArrayList<Product> fetchProducts(final Cursor data) {
-        final ArrayList<Product> tmpProducts = new ArrayList<>(data.getCount());
-        if (data.getCount() != 0) {
-            do {
-                final Product product = getProduct(data);
-                tmpProducts.add(product);
-            }
-            while (data.moveToNext());
-        }
-        return tmpProducts;
-    }
-
-    private DayPart getDayPart(Cursor data, long day) {
-        DayPart dayPart = new DayPart(data.getInt(1), day);
-        dayPart.setEatenProducts(getProductsFromJson(data.getString(2)));
-        return dayPart;
-    }
-
-    private Product getProduct(Cursor data) {
-        Product product = new Product();
-        final String id = data.getString(0);
-        final String name = data.getString(1);
-        final float proteins = getFloatFromDatabase(data.getString(2));
-        final float fats = getFloatFromDatabase(data.getString(3));
-        final float carbohydrates = getFloatFromDatabase(data.getString(4));
-        final int calories = getIntegerFromDatabase(data.getString(5));
-        final String info = data.getString(6);
-        final String img = data.getString(7);
-        product.setId(id);
-        product.setName(name);
-        product.setProteins(proteins);
-        product.setFats(fats);
-        product.setCarbohydrates(carbohydrates);
-        product.setCalories(calories);
-        product.setInfo(info);
-        product.setImg(img);
-        return product;
-    }
-
-    private Product getProductById(String id) {
-        SQLiteDatabase readableDatabase = getReadableDatabase();
-        String query = SQLQueryBuilder.getInstance()
-                .select(ALL)
-                .from(PRODUCTS_TABLE)
-                .where()
-                .stringClause(COLUMN_ID, LIKE, id)
-                .build();
-        Cursor data = readableDatabase.rawQuery(query, null);
-        data.moveToFirst();
-        return getProduct(data);
-    }
-
-    private ArrayList<EatenProduct> getProductsFromJson(String json) {
-//        Log.d("DatabaseManager", "getProductsFromJson json " + json);
-        ArrayList<EatenProduct> result = new ArrayList<>();
-        try {
-            JSONArray items = new JSONArray(json);
-            JSONObject eatenData;
-            EatenProduct eatenProduct;
-            for (int i = 0; i < items.length(); i++) {
-                eatenData = items.getJSONObject(i);
-                eatenProduct = new EatenProduct(eatenData.getLong(JSON_TIME));
-                eatenProduct.setCount(eatenData.getInt(JSON_COUNT));
-                eatenProduct.setScalarId(eatenData.getInt(JSON_SCALAR_ID));
-                eatenProduct.setProduct(getProductById(eatenData.getString(JSON_ID)));
-                result.add(eatenProduct);
-            }
-            return result;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return result;
-        }
-    }
-
+    // todo move this somewhere
     private String getJsonFromProducts(ArrayList<EatenProduct> products) {
         String resultJson = "[]";
         try {
@@ -320,7 +165,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
                     product.put(JSON_TIME, prod.getTime());
                     product.put(JSON_COUNT, prod.getCount());
                     product.put(JSON_SCALAR_ID, prod.getScalarId());
-                    product.put(JSON_ID, prod.getProduct().getId());
+                    product.put(JSON_PRODUCT_ID, prod.getProduct().getId());
                     all.put(product);
                 }
 
@@ -332,18 +177,6 @@ public class DatabaseManager extends SQLiteOpenHelper {
             e.printStackTrace();
             return resultJson;
         }
-    }
-
-    private float getFloatFromDatabase(String f) {
-        return Float.valueOf(f);
-    }
-
-    private int getIntegerFromDatabase(String f) {
-        return Integer.valueOf(f);
-    }
-
-    private long getLongFromDatabase(String f) {
-        return Long.valueOf(f);
     }
 
     @Override
@@ -358,60 +191,61 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public void update() {
-        sOldConfig = Prefs.getSavedDatabaseConfig();
         Api.getConfig(
                 new Response.Listener<DBConfig>() {
                     @Override
                     public void onResponse(DBConfig newConfig) {
-                        if (isReadyToUpdate(sOldConfig, newConfig, sInstance)) {
-                            Log.d("DatabaseUpdateHelper", "NEW CONFIG");
-                            sNewConfig = newConfig;
+                        if (isReadyToUpdate(newConfig, sInstance)) {
+                            mNewConfig = newConfig;
                             downloadProducts();
                         } else {
-                            Log.d("DatabaseUpdateHelper", "NO NEW CONFIG");
-                            handleLoadComplete();
+                            unlockFetchers();
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("DatabaseManager", "getConfig error: " + error);
-                        handleLoadComplete();
+                        Log.e("DatabaseManager", "getConfig error: " + error);
+                        unlockFetchers();
                     }
                 }
         );
     }
 
-    private boolean isReadyToUpdate(DBConfig oldConf, DBConfig newConf, DatabaseManager db) {
-        boolean isReady;
-        isReady = oldConf.isEmpty();
-        isReady |= !oldConf.equals(newConf);
-        isReady |= newConf.getRowCount() != db.getProductsCount();
-        return isReady;
-    }
-
     private void downloadProducts() {
-        sInstance.clearProducts();
         Api.getProducts(
                 new Response.Listener<ArrayList<Product>>() {
                     @Override
                     public void onResponse(ArrayList<Product> response) {
-                        sInstance.pushProducts(response);
+                        mDataHolder.put(KEY_NEW_DATA, response);
+                        pushNewProducts();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("DatabaseManager", "getConfig error: " + error);
-                        handleLoadComplete();
+                        unlockFetchers();
                     }
                 }
         );
     }
 
+    // todo refactor
+    private boolean isReadyToUpdate(DBConfig newConf, DatabaseManager db) {
+        DBConfig oldConf = Prefs.getSavedDatabaseConfig();
+        boolean isReady;
+        isReady = oldConf.isEmpty();
+        isReady |= !oldConf.equals(newConf);
+        isReady |= newConf.getRowCount() != db.getProductsCount();
+        Log.d("DatabaseManager", "isReadyToUpdate " + isReady);
+        return isReady;
+    }
+
+    // todo refactor
     private int getProductsCount() {
-        String countQuery = SQLQueryBuilder.getInstance().select(ALL).from(PRODUCTS_TABLE).build();
+        String countQuery = SQLQueryBuilder.newInstance().select(ALL).from(PRODUCTS_TABLE).build();
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         int productsCount = 0;
@@ -422,17 +256,32 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return productsCount;
     }
 
-    private void clearProducts() {
-        SQLiteDatabase db = getWritableDatabase();
-        String clearQuery = SQLQueryBuilder.getInstance().delete(PRODUCTS_TABLE).build();
-        db.execSQL(clearQuery);
+    private void pushNewProducts() {
+        sDatabaseQueue.postRunnable(clearTask());
+        sDatabaseQueue.postRunnable(fillTask());
     }
 
-    private void pushProducts(final ArrayList<Product> products) {
-        Runnable pushTask = new Runnable() {
+    private Runnable clearTask() {
+        return new Runnable() {
             @Override
             public void run() {
                 SQLiteDatabase db = getWritableDatabase();
+                String clearQuery = SQLQueryBuilder.newInstance().delete(PRODUCTS_TABLE).build();
+                db.execSQL(clearQuery);
+            }
+        };
+    }
+
+    private Runnable fillTask() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                Log.d("fillTask", "run");
+                ArrayList<Product> products = (ArrayList<Product>) mDataHolder.get(KEY_NEW_DATA);
+                if (products == null) throw new IllegalStateException("Products cannot be null");
+
+                SQLiteDatabase db = getWritableDatabase();
+
                 try {
                     db.beginTransaction();
                     try {
@@ -440,15 +289,15 @@ public class DatabaseManager extends SQLiteOpenHelper {
                         db.setTransactionSuccessful();
                     } finally {
                         db.endTransaction();
-                        Prefs.saveDbConfig(sNewConfig);
-                        handleLoadComplete();
+                        Prefs.saveDbConfig(mNewConfig);
+                        unlockFetchers();
+                        Log.d("DatabaseManager", "success");
                     }
                 } catch (Exception e) {
                     Log.e("My Diet Database", "preFillDatabase: " + e);
                 }
             }
         };
-        WorkerThreadExecutor.start().task(pushTask).execute();
     }
 
     private void fillAllProducts(SQLiteDatabase db, ArrayList<Product> products) {
@@ -469,4 +318,3 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.insert(PRODUCTS_TABLE, null, values);
     }
 }
-

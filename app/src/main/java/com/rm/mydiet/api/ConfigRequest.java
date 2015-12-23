@@ -52,8 +52,10 @@ public class ConfigRequest extends Request<DBConfig> {
 
             return Response.success(config, HttpHeaderParser.parseCacheHeaders(response));
         } catch (JsonSyntaxException e) {
+            Log.d("ConfigRequest", "parseNetworkResponse " + e.getLocalizedMessage());
             return Response.error(new ParseError(e));
         } catch (JSONException e) {
+            Log.d("ConfigRequest", "parseNetworkResponse " + e.getLocalizedMessage());
             return Response.error(new ParseError(e));
         }
     }

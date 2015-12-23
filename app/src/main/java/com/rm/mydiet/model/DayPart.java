@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.rm.mydiet.utils.Prefs;
+import com.rm.mydiet.utils.TimeUtil;
 
 import java.util.ArrayList;
 
@@ -48,7 +49,7 @@ public class DayPart implements Parcelable {
     private DayPart(int partId, boolean exists, long day) {
         this.mPartId = partId;
         this.mExists = exists;
-        this.mDay = day;
+        this.mDay = TimeUtil.toMillis(day);
         setTimerOffset(partId);
     }
 
@@ -56,8 +57,8 @@ public class DayPart implements Parcelable {
         if (partId > 4) partId = 0;
         if (partId < 0) partId = 4;
         this.mPartId = partId;
-        this.mDay = day;
         this.mExists = true;
+        this.mDay = TimeUtil.toMillis(day);
         setTimerOffset(partId);
     }
 

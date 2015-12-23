@@ -1,4 +1,4 @@
-package com.rm.mydiet.utils;
+package com.rm.mydiet.utils.view;
 
 import android.app.Activity;
 import android.content.Context;

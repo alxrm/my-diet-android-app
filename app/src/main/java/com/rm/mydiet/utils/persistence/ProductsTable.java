@@ -20,7 +20,7 @@ public interface ProductsTable {
     String COLUMN_INFO = "info";
     String COLUMN_IMG = "img";
 
-    String CREATE = SQLQueryBuilder.getInstance()
+    String CREATE = SQLQueryBuilder.newInstance()
             .create(PRODUCTS_TABLE)
             .columnsStart()
             .column(COLUMN_ID, new String[] {TYPE_TEXT, NOT+NULL, PRIMARY_KEY})

@@ -14,7 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
-import com.rm.mydiet.utils.KeyBoardUtil;
+import com.rm.mydiet.utils.view.KeyBoardUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
 
 import java.util.ArrayList;
@@ -41,7 +41,6 @@ public class MainFragment extends BaseFragment implements OnFragmentInteractionL
     private ImageView mPrevDayBtn;
     private ImageView mNextDayBtn;
 
-    private long mStartingPoint;
     private int mCurrentPosition;
     private ProgressBar mTopProgress;
 
@@ -75,7 +74,6 @@ public class MainFragment extends BaseFragment implements OnFragmentInteractionL
         mDayPager = (ViewPager) findViewById(R.id.pager_day);
         mTopProgress = (ProgressBar) mParent.getToolbar().findViewById(R.id.day_cals_left);
 
-        mStartingPoint = getToday();
         mCurrentPosition = mDayList.size() - 1;
 
         mDayPagerAdapter = new DayPagerAdapter(getChildFragmentManager());
@@ -93,15 +91,10 @@ public class MainFragment extends BaseFragment implements OnFragmentInteractionL
                 }
 
                 mCurrentDayText.setText(formatTimelineDate(dayStart));
-                mNextDayBtn.setVisibility(isToday(dayStart) ?
-                                View.INVISIBLE : View.VISIBLE
-                );
-                mPrevDayBtn.setVisibility(mCurrentPosition == 0 ?
-                                View.INVISIBLE : View.VISIBLE
-                );
+                mNextDayBtn.setVisibility(isToday(dayStart) ? View.INVISIBLE : View.VISIBLE);
+                mPrevDayBtn.setVisibility(mCurrentPosition == 0 ? View.INVISIBLE : View.VISIBLE);
             }
         });
-        mDayPager.setCurrentItem(mCurrentPosition);
 
         mNextDayBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,9 +112,22 @@ public class MainFragment extends BaseFragment implements OnFragmentInteractionL
             }
         });
 
+        mDayPager.setCurrentItem(mCurrentPosition);
     }
 
-    int getFormattedPosition(int pos) {
+    @Override
+    public void onStop() {
+        super.onStop();
+        mTopProgress.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mTopProgress.setVisibility(View.VISIBLE);
+    }
+
+    private int getFormattedPosition(int pos) {
         return Math.abs(pos - (mDayList.size() - 1));
     }
 

@@ -11,6 +11,9 @@ import java.util.ArrayList;
  */
 public class EatenProduct implements Parcelable {
 
+    public static final int DEFAULT_COUNT = 1;
+    public static final int DEFAULT_SCALAR_ID = 0;
+
     private static final float ONE_GRAM_SCALAR = 0.01F;
     private static final String OUTER_SEPARATOR = ",";
     private static final String INNER_SEPARATOR = " ";

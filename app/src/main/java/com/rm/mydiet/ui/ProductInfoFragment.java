@@ -6,7 +6,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,8 +22,8 @@ import android.widget.TextView;
 import com.rm.mydiet.R;
 import com.rm.mydiet.model.EatenProduct;
 import com.rm.mydiet.model.Product;
-import com.rm.mydiet.utils.TextWatcherAdapter;
 import com.rm.mydiet.utils.base.BaseFragment;
+import com.rm.mydiet.utils.view.TextWatcherAdapter;
 
 import static com.rm.mydiet.ui.DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_DAY_PART;
 import static com.rm.mydiet.ui.DataTransferring.FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT;
@@ -40,9 +39,6 @@ import static com.rm.mydiet.utils.StringUtils.formatFloat;
 public class ProductInfoFragment extends BaseFragment {
 
     //region Vars and consts
-    private static final int DEFAULT_COUNT = 1;
-    private static final int DEFAULT_SCALAR_ID = 0;
-
     private boolean mIsInteractive;
     private Bundle mParentData;
 
@@ -110,25 +106,28 @@ public class ProductInfoFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
         mEaten = getArguments().getParcelable(FRAGMENT_PRODUCT_INFO_KEY_EATEN_PRODUCT);
+
         if (mEaten != null) {
             setIsInteractive(true);
+
             mPart = getArguments().getInt(FRAGMENT_PRODUCT_INFO_KEY_DAY_PART);
             mProduct = mEaten.getProduct();
             mTime = mEaten.getTime();
             mCount = mEaten.getCount();
             mScalarId = mEaten.getScalarId();
-            Log.d("ProductInfoFragment", "EATEN " + mEaten.getScalarId());
             mScalar = EatenProduct.getScalars(mProduct).get(mScalarId);
         } else {
             mProduct = getArguments().getParcelable(FRAGMENT_PRODUCT_INFO_KEY_PRODUCT);
-            mCount = DEFAULT_COUNT;
-            Log.d("ProductInfoFragment", "NOT EATEN");
-            mScalarId = DEFAULT_SCALAR_ID;
+            mCount = EatenProduct.DEFAULT_COUNT;
+            mScalarId = EatenProduct.DEFAULT_SCALAR_ID;
             mScalar = EatenProduct.getScalars(mProduct).get(mScalarId);
             mParentData = mParent.getParentData();
+
             if (mParentData != null) {
                 setIsInteractive(true);
+
                 mTime = mParentData.getLong(PARENT_PRODUCT_INFO_TIME);
                 mPart = mParentData.getInt(PARENT_PRODUCT_INFO_DAY_PART);
             } else {
@@ -218,7 +217,7 @@ public class ProductInfoFragment extends BaseFragment {
             @Override
             public void afterTextChanged(Editable s) {
                 mCount = TextUtils.isEmpty(s.toString()) ?
-                        DEFAULT_COUNT : Integer.parseInt(s.toString());
+                        EatenProduct.DEFAULT_COUNT : Integer.parseInt(s.toString());
                 setupProductStats();
             }
         });
@@ -260,18 +259,18 @@ public class ProductInfoFragment extends BaseFragment {
         float full = proteins + carbs + fats;
 
         mProteinsText.setText(String.format("%s г.", formatFloat(proteins)));
-        mProteinsProgress.setProgress(getProgress(proteins, full));
+        mProteinsProgress.setProgress(calculateProgress(proteins, full));
         mProteinsBadge.setText("Белки");
         mCarbsText.setText(String.format("%s г.", formatFloat(carbs)));
-        mCarbsProgress.setProgress(getProgress(carbs, full));
+        mCarbsProgress.setProgress(calculateProgress(carbs, full));
         mCarbsBadge.setText("Углеводы");
         mFatsText.setText(String.format("%s г.", formatFloat(fats)));
-        mFatsProgress.setProgress(getProgress(fats, full));
+        mFatsProgress.setProgress(calculateProgress(fats, full));
         mFatsBadge.setText("Жиры");
         mCalsNum.setText(formatFloat(cals));
     }
 
-    private int getProgress(float value, float full) {
+    private int calculateProgress(float value, float full) {
         return (int) (value / full * 100);
     }
 

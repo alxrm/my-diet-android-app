@@ -14,8 +14,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
-import com.rm.mydiet.utils.InputValidator.IntegerValidator;
 import com.rm.mydiet.utils.Prefs;
+import com.rm.mydiet.utils.StringUtils.InputValidator.IntegerValidator;
 import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;

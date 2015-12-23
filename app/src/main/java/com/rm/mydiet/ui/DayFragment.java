@@ -16,6 +16,7 @@ import com.rm.mydiet.model.DayPart;
 import com.rm.mydiet.model.EatenProduct;
 import com.rm.mydiet.model.Product;
 import com.rm.mydiet.ui.adapter.DayPartsAdapter;
+import com.rm.mydiet.utils.CalculateUtils;
 import com.rm.mydiet.utils.Prefs;
 import com.rm.mydiet.utils.TimeUtil;
 import com.rm.mydiet.utils.base.BaseFragment;
@@ -33,11 +34,14 @@ import static com.rm.mydiet.model.EatenProduct.getScalars;
 public class DayFragment extends BaseFragment
         implements OnFragmentInteractionListener, DatabaseListener {
 
+    // TODO aggressive refactoring
+    // TODO optimizations (!)
+
     private RecyclerView mDayParts;
     private DayPartsAdapter mDayPartsAdapter;
     private ArrayList<DayPart> mDayPartsList = new ArrayList<>();
 
-    private long mCurrentStart;
+    private long mCurrentStart; // MILLIS
     private int mCurrentCals;
 
     public static DayFragment newInstance(long dayStart) {
@@ -102,7 +106,7 @@ public class DayFragment extends BaseFragment
                 Bundle callbackData = (Bundle) data;
                 long currentTime = callbackData.getLong(DataTransferring.CALLBACK_DIARY_TIME);
                 int dayPart = callbackData.getInt(DataTransferring.CALLBACK_DIARY_DAY_PART);
-                long time = TimeUtil.isToday(currentTime) ? TimeUtil.unixTime() : currentTime;
+                long time = TimeUtil.isToday(currentTime) ? TimeUtil.unixTimeMillis() : currentTime;
                 starter.putExtra(DataTransferring.ACTIVITY_ADD_KEY_DAY_PART, dayPart);
                 starter.putExtra(DataTransferring.ACTIVITY_ADD_KEY_TIME, time);
                 startActivityForResult(starter, DataTransferring.ACTIVITY_ADD_CODE_REQUEST);
@@ -159,7 +163,10 @@ public class DayFragment extends BaseFragment
     }
 
     public int getCaloriesProgress() {
-        return (int) ((float) mCurrentCals / Prefs.get().getInt(Prefs.KEY_MAX_CALS, 2500) * 100);
+        return CalculateUtils.calcProgress(
+                mCurrentCals,
+                Prefs.get().getInt(Prefs.KEY_MAX_CALS, 2500)
+        );
     }
 
     private void updateDayParts(DayPart updated) {
@@ -176,14 +183,17 @@ public class DayFragment extends BaseFragment
 
     private void calculateCalories(ArrayList<DayPart> dayPartsList) {
         int cals = 0;
+        Product product;
+
         for (DayPart dayPart : dayPartsList) {
             for (EatenProduct eaten : dayPart.getEatenProducts()) {
-                Product product = eaten.getProduct();
+                product = eaten.getProduct();
                 cals += eaten.getCount()
                         * product.getCalories()
                         * getScalars(product).get(eaten.getScalarId());
             }
         }
+
         mCurrentCals = cals;
 
         if (mInteractionListener != null) {
@@ -232,7 +242,7 @@ public class DayFragment extends BaseFragment
     }
 
     private boolean hasTimer(DayPart dayPart) {
-        return (dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTime();
+        return (dayPart.getTimerOffset() + dayPart.getDay()) > TimeUtil.unixTimeMillis();
     }
 
     @SuppressWarnings("unchecked")

@@ -10,11 +10,14 @@ import java.util.Random;
  * Created by alex
  */
 public class StringUtils {
+
+    private static final String DEFAULT_PATTERN = "#,###.#";
+    private static final String EMPTY = "";
+
     private static final DecimalFormatSymbols sDecimalSymbols =
             new DecimalFormatSymbols();
     private static final DecimalFormat sDecimalFormat =
             new DecimalFormat();
-    private static final String DEFAULT_PATTERN = "#,###.#";
 
     static {
         sDecimalSymbols.setDecimalSeparator('.');
@@ -45,6 +48,10 @@ public class StringUtils {
         }
     }
 
+    public static String nullAsEmpty(String src) {
+        return (src == null ? EMPTY : src);
+    }
+
     public static String formatFloat(float f) {
         sDecimalFormat.applyPattern(DEFAULT_PATTERN);
         return sDecimalFormat.format(f);
@@ -61,5 +68,31 @@ public class StringUtils {
 
         sDecimalFormat.applyPattern(pattern);
         return sDecimalFormat.format(f);
+    }
+
+    public static float getFloatFromString(String f) {
+        return Float.valueOf(f);
+    }
+
+    public static int getIntegerFromString(String f) {
+        return Integer.valueOf(f);
+    }
+
+    public static long getLongFromString(String f) {
+        return Long.valueOf(f);
+    }
+
+    public interface InputValidator {
+        interface IntegerValidator {
+            boolean isValid(int data);
+        }
+
+        interface StringValidator {
+            boolean isValid(String data);
+        }
+
+        interface StringFilter {
+            String filter(String invalidString);
+        }
     }
 }

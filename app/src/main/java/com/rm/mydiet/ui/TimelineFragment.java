@@ -9,12 +9,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.rm.mydiet.R;
+import com.rm.mydiet.utils.CalculateUtils;
 import com.rm.mydiet.utils.base.BaseFragment;
 
 /**
  * Created by alex
  */
 public class TimelineFragment extends BaseFragment {
+
+    // TODO aggressive refactoring
 
     protected ProgressBar mCalsProgress;
     protected TextView mCalsText;
@@ -34,7 +37,7 @@ public class TimelineFragment extends BaseFragment {
     }
 
     protected void setCaloriesProgress(int curCals, int maxCals) {
-        int calsProgress = (int) ((float) curCals / maxCals * 100);
+        int calsProgress = CalculateUtils.calcProgress(curCals, maxCals);
 
         if (mCalsProgress != null && mCalsText != null) {
             mCalsProgress.setProgress(calsProgress);

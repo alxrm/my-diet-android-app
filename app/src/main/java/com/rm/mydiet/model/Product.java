@@ -1,7 +1,12 @@
 package com.rm.mydiet.model;
 
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+
+import static com.rm.mydiet.utils.StringUtils.getFloatFromString;
+import static com.rm.mydiet.utils.StringUtils.getIntegerFromString;
 
 /**
  * Created by alex
@@ -123,4 +128,24 @@ public class Product implements Parcelable {
         dest.writeInt(calories);
     }
 
+    public static Product cursorToProduct(@NonNull Cursor data) {
+        Product product = new Product();
+        final String id = data.getString(0);
+        final String name = data.getString(1);
+        final float proteins = getFloatFromString(data.getString(2));
+        final float fats = getFloatFromString(data.getString(3));
+        final float carbohydrates = getFloatFromString(data.getString(4));
+        final int calories = getIntegerFromString(data.getString(5));
+        final String info = data.getString(6);
+        final String img = data.getString(7);
+        product.setId(id);
+        product.setName(name);
+        product.setProteins(proteins);
+        product.setFats(fats);
+        product.setCarbohydrates(carbohydrates);
+        product.setCalories(calories);
+        product.setInfo(info);
+        product.setImg(img);
+        return product;
+    }
 }

@@ -19,9 +19,9 @@ public interface TimelineTable {
     String JSON_TIME = "time";
     String JSON_COUNT = "count";
     String JSON_SCALAR_ID = "scalar_id";
-    String JSON_ID = "prod_id";
+    String JSON_PRODUCT_ID = "prod_id";
 
-    String CREATE = SQLQueryBuilder.getInstance()
+    String CREATE = SQLQueryBuilder.newInstance()
             .create(TIMELINE_TABLE)
             .columnsStart()
             .column(COLUMN_DAY_START, new String[]{TYPE_TEXT, NOT + NULL})

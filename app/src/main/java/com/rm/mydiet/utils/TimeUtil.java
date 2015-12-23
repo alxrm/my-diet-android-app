@@ -34,8 +34,24 @@ public class TimeUtil {
 //        );
     }
 
-    public static long unixTime() {
+    public static boolean isMillis(long time) {
+        return time > 1_000_000_000_000L;
+    }
+
+    public static long toSeconds(long time) {
+        return isMillis(time) ? (time / 1000) : time;
+    }
+
+    public static long toMillis(long time) {
+        return isMillis(time) ? time : (time * 1000);
+    }
+
+    public static long unixTimeMillis() {
         return System.currentTimeMillis();
+    }
+
+    public static long unixTimeSeconds() {
+        return System.currentTimeMillis() / 1000;
     }
 
     public static String getDay(long unix) {
@@ -91,7 +107,7 @@ public class TimeUtil {
     }
 
     public static long getToday() {
-        return getStartOfTheDay(unixTime());
+        return getStartOfTheDay(unixTimeMillis());
     }
 
     public static String formatBirthDate(long birth) {
@@ -133,7 +149,7 @@ public class TimeUtil {
     }
 
     public static boolean isToday(long dayInMillis) {
-        return (getToday()/1000) == (getStartOfTheDay(dayInMillis)/1000);
+        return compareMillis(getToday(), dayInMillis);
     }
 
     public static boolean compareMillis(long lMillis, long rMillis) {

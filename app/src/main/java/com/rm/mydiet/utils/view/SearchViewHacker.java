@@ -1,4 +1,4 @@
-package com.rm.mydiet.utils;
+package com.rm.mydiet.utils.view;
 
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;

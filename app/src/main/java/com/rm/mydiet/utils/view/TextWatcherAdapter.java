@@ -1,4 +1,4 @@
-package com.rm.mydiet.utils;
+package com.rm.mydiet.utils.view;
 
 import android.text.Editable;
 import android.text.TextWatcher;
